@@ -155,6 +155,15 @@
     }
     .hero-photo.is-live .hero-live { opacity: 1; }
     .hero-photo.is-live img { opacity: 0; }
+    .mosaic .panel { position: relative; }
+    .ink-live {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      opacity: 0;
+    }
+    .mosaic .panel.is-live img { opacity: 0; }
+    .mosaic .panel.is-live .ink-live { opacity: 1; }
     .hero-photo::after {
       content: ""; position: absolute; inset: 0;
       background:
