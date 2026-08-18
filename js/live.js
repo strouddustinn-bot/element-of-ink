@@ -41,11 +41,18 @@
     })();
   }
 
-  // Progressive enhancement: preserve original photos for touch and reduced motion.
   if (reduce || !fine) return;
 
+  // Safety override for any stale CSS from earlier particle prototypes.
+  var safety = document.createElement("style");
+  safety.textContent =
+    ".mosaic .panel img{opacity:1!important}" +
+    ".mosaic .panel .ink-live{opacity:1!important}";
+  document.head.appendChild(safety);
+
   function coverUV(iw, ih, vw, vh, ox, oy) {
-    var ir = iw / ih, vr = vw / vh;
+    var ir = iw / ih;
+    var vr = vw / vh;
     var sx = 1, sy = 1, u = 0, v = 0;
     if (ir > vr) {
       sx = vr / ir;
@@ -75,10 +82,7 @@
       c.v * img.naturalHeight,
       c.sx * img.naturalWidth,
       c.sy * img.naturalHeight,
-      0,
-      0,
-      w,
-      h
+      0, 0, w, h
     );
   }
 
@@ -99,8 +103,8 @@
     return (data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114) / 255;
   }
 
-  function deterministicSeed(x, y) {
-    var n = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
+  function deterministicSeed(a, b) {
+    var n = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453;
     return n - Math.floor(n);
   }
 
@@ -109,8 +113,8 @@
     var h = src.height;
     var tiny = document.createElement("canvas");
     var avg = document.createElement("canvas");
-    tiny.width = Math.max(24, Math.round(w / 10));
-    tiny.height = Math.max(24, Math.round(h / 10));
+    tiny.width = Math.max(24, Math.round(w / 11));
+    tiny.height = Math.max(24, Math.round(h / 11));
     avg.width = w;
     avg.height = h;
 
@@ -128,11 +132,7 @@
   function buildMask(work, maskImg, pos) {
     var w = work.width;
     var h = work.height;
-    var result = {
-      confidence: new Uint8ClampedArray(w * h),
-      explicit: !!maskImg,
-      average: null
-    };
+    var confidence = new Uint8ClampedArray(w * h);
 
     if (maskImg) {
       var mc = document.createElement("canvas");
@@ -143,14 +143,12 @@
       var md = mctx.getImageData(0, 0, w, h).data;
       for (var mi = 0, mp = 0; mi < md.length; mi += 4, mp++) {
         var rgb = Math.max(md[mi], md[mi + 1], md[mi + 2]);
-        result.confidence[mp] = Math.round(rgb * (md[mi + 3] / 255));
+        confidence[mp] = Math.round(rgb * (md[mi + 3] / 255));
       }
-      return result;
+      return { confidence: confidence, explicit: true, average: buildLocalAverage(work) };
     }
 
-    // Conservative fallback: locally dark detail, not every dark pixel.
     var avg = buildLocalAverage(work);
-    result.average = avg;
     var sctx = work.getContext("2d", { willReadFrequently: true });
     var actx = avg.getContext("2d", { willReadFrequently: true });
     var src = sctx.getImageData(0, 0, w, h).data;
@@ -160,118 +158,271 @@
       var lum = luminance(src, i);
       var baseLum = luminance(local, i);
       var contrast = Math.max(0, baseLum - lum);
-      var darkness = clamp((0.62 - lum) / 0.44, 0, 1);
-      var lightContext = clamp((baseLum - 0.20) / 0.38, 0, 1);
-      var score = contrast * 4.6 + darkness * 0.28 * lightContext;
-      if (baseLum < 0.18 || lum > 0.64) score = 0;
-      var confidence = clamp((score - 0.10) / 0.52, 0, 1);
-      result.confidence[p] = Math.round(confidence * 255);
+      var darkness = clamp((0.60 - lum) / 0.42, 0, 1);
+      var usableBase = clamp((baseLum - 0.19) / 0.40, 0, 1);
+      var score = contrast * 5.2 + darkness * 0.22 * usableBase;
+
+      if (baseLum < 0.17 || lum > 0.62) score = 0;
+
+      confidence[p] = Math.round(
+        clamp((score - 0.13) / 0.49, 0, 1) * 255
+      );
     }
 
-    return result;
+    return { confidence: confidence, explicit: false, average: avg };
   }
 
-  function nearestBaseColor(pix, avgPix, mask, w, h, x, y) {
-    var radii = [3, 6, 10, 15];
-    var dirs = [
-      [1, 0], [-1, 0], [0, 1], [0, -1],
-      [0.707, 0.707], [-0.707, 0.707],
-      [0.707, -0.707], [-0.707, -0.707]
-    ];
-
-    for (var ri = 0; ri < radii.length; ri++) {
-      var r = radii[ri];
-      var sr = 0, sg = 0, sb = 0, n = 0;
-      for (var di = 0; di < dirs.length; di++) {
-        var sx = Math.round(x + dirs[di][0] * r);
-        var sy = Math.round(y + dirs[di][1] * r);
-        if (sx < 0 || sy < 0 || sx >= w || sy >= h) continue;
-        var pi = sy * w + sx;
-        if (mask[pi] > 42) continue;
-        var oi = pi * 4;
-        sr += pix[oi];
-        sg += pix[oi + 1];
-        sb += pix[oi + 2];
-        n++;
-      }
-      if (n >= 2) {
-        return {
-          r: Math.round(sr / n),
-          g: Math.round(sg / n),
-          b: Math.round(sb / n)
-        };
+  function dilate(binary, w, h) {
+    var out = new Uint8Array(binary.length);
+    for (var y = 0; y < h; y++) {
+      for (var x = 0; x < w; x++) {
+        var i = y * w + x;
+        if (!binary[i]) continue;
+        for (var yy = Math.max(0, y - 1); yy <= Math.min(h - 1, y + 1); yy++) {
+          for (var xx = Math.max(0, x - 1); xx <= Math.min(w - 1, x + 1); xx++) {
+            out[yy * w + xx] = 1;
+          }
+        }
       }
     }
-
-    var index = (y * w + x) * 4;
-    var fallback = avgPix || pix;
-    return {
-      r: fallback[index],
-      g: fallback[index + 1],
-      b: fallback[index + 2]
-    };
+    return out;
   }
 
-  function spawnParticles(work, maskResult, count) {
-    var w = work.width;
-    var h = work.height;
-    var ctx = work.getContext("2d", { willReadFrequently: true });
-    var pix = ctx.getImageData(0, 0, w, h).data;
-    var confidence = maskResult.confidence;
-    var average = maskResult.average || buildLocalAverage(work);
-    var avgPix = average.getContext("2d", { willReadFrequently: true })
-      .getImageData(0, 0, w, h).data;
-
-    var eligible = 0;
+  function connectedComponents(confidence, w, h) {
+    var base = new Uint8Array(confidence.length);
     for (var i = 0; i < confidence.length; i++) {
-      if (confidence[i] >= 78) eligible++;
+      if (confidence[i] >= 100) base[i] = 1;
     }
-    if (!eligible) return null;
 
-    var probability = Math.min(1, count / eligible);
-    var particles = [];
+    // A one-pixel bridge reconnects broken outlines but generally keeps
+    // neighboring tattoo details (such as separate suction cups) distinct.
+    var binary = dilate(base, w, h);
+    var seen = new Uint8Array(binary.length);
+    var components = [];
+    var qx = new Int32Array(binary.length);
+    var qy = new Int32Array(binary.length);
+    var dirs = [
+      [-1, -1], [0, -1], [1, -1],
+      [-1, 0],           [1, 0],
+      [-1, 1],  [0, 1],  [1, 1]
+    ];
 
     for (var y = 0; y < h; y++) {
       for (var x = 0; x < w; x++) {
-        var pi = y * w + x;
-        var conf = confidence[pi] / 255;
-        if (conf < 0.30) continue;
+        var start = y * w + x;
+        if (!binary[start] || seen[start]) continue;
 
-        var seed = deterministicSeed(x, y);
-        if (seed > probability * (0.55 + conf * 0.65)) continue;
+        var head = 0, tail = 0;
+        qx[tail] = x;
+        qy[tail] = y;
+        tail++;
+        seen[start] = 1;
 
-        var oi = pi * 4;
-        var base = nearestBaseColor(pix, avgPix, confidence, w, h, x, y);
-        particles.push({
-          hx: x / w,
-          hy: y / h,
-          x: x / w,
-          y: y / h,
-          vx: 0,
-          vy: 0,
-          z: 0,
-          vz: 0,
-          r: pix[oi],
-          g: pix[oi + 1],
-          b: pix[oi + 2],
-          br: base.r,
-          bg: base.g,
-          bb: base.b,
-          size: 0.75 + seed * 1.8,
-          aspect: 0.55 + deterministicSeed(y, x) * 0.75,
-          seed: seed,
-          confidence: conf,
-          ang: (seed - 0.5) * 0.9
-        });
+        var pixels = [];
+        var minX = x, minY = y, maxX = x, maxY = y;
 
-        if (particles.length >= count) return particles;
+        while (head < tail) {
+          var cx = qx[head];
+          var cy = qy[head];
+          head++;
+
+          var ci = cy * w + cx;
+          if (confidence[ci] >= 72) {
+            pixels.push(ci);
+            if (cx < minX) minX = cx;
+            if (cy < minY) minY = cy;
+            if (cx > maxX) maxX = cx;
+            if (cy > maxY) maxY = cy;
+          }
+
+          for (var d = 0; d < dirs.length; d++) {
+            var nx = cx + dirs[d][0];
+            var ny = cy + dirs[d][1];
+            if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+            var ni = ny * w + nx;
+            if (!binary[ni] || seen[ni]) continue;
+            seen[ni] = 1;
+            qx[tail] = nx;
+            qy[tail] = ny;
+            tail++;
+          }
+        }
+
+        if (pixels.length >= 5) {
+          components.push({
+            pixels: pixels,
+            minX: minX,
+            minY: minY,
+            maxX: maxX,
+            maxY: maxY
+          });
+        }
       }
     }
 
-    return particles.length ? particles : null;
+    return components;
   }
 
-  function createInkInteraction(opts) {
+  function splitLargeComponent(component, w) {
+    var bw = component.maxX - component.minX + 1;
+    var bh = component.maxY - component.minY + 1;
+    var area = component.pixels.length;
+
+    // Small/medium connected features stay rigid as one visual object.
+    // This is what lets a suction cup, tooth, eye, symbol, etc. move intact.
+    if (area <= 380 && bw <= 54 && bh <= 54) {
+      return [component.pixels];
+    }
+
+    // Large connected shading/outlines are divided into coherent local groups.
+    // The sprite shape is still masked, so these never look like square tiles.
+    var cell = 28;
+    var buckets = Object.create(null);
+    for (var i = 0; i < component.pixels.length; i++) {
+      var pi = component.pixels[i];
+      var x = pi % w;
+      var y = Math.floor(pi / w);
+      var bx = Math.floor((x - component.minX) / cell);
+      var by = Math.floor((y - component.minY) / cell);
+      var key = bx + ":" + by;
+      if (!buckets[key]) buckets[key] = [];
+      buckets[key].push(pi);
+    }
+
+    var groups = [];
+    Object.keys(buckets).forEach(function (key) {
+      if (buckets[key].length >= 5) groups.push(buckets[key]);
+    });
+    return groups;
+  }
+
+  function makeGroup(pixelIndices, work, maskResult) {
+    var w = work.width;
+    var h = work.height;
+    var srcCtx = work.getContext("2d", { willReadFrequently: true });
+    var src = srcCtx.getImageData(0, 0, w, h).data;
+    var avg = maskResult.average || buildLocalAverage(work);
+    var avgData = avg.getContext("2d", { willReadFrequently: true })
+      .getImageData(0, 0, w, h).data;
+    var conf = maskResult.confidence;
+
+    var minX = w, minY = h, maxX = 0, maxY = 0;
+    var sumX = 0, sumY = 0, sumWeight = 0;
+
+    for (var i = 0; i < pixelIndices.length; i++) {
+      var pi = pixelIndices[i];
+      var x = pi % w;
+      var y = Math.floor(pi / w);
+      var weight = Math.max(1, conf[pi]);
+      if (x < minX) minX = x;
+      if (y < minY) minY = y;
+      if (x > maxX) maxX = x;
+      if (y > maxY) maxY = y;
+      sumX += x * weight;
+      sumY += y * weight;
+      sumWeight += weight;
+    }
+
+    if (!sumWeight) return null;
+
+    var cx = sumX / sumWeight;
+    var cy = sumY / sumWeight;
+    var pad = 3;
+    minX = Math.max(0, minX - pad);
+    minY = Math.max(0, minY - pad);
+    maxX = Math.min(w - 1, maxX + pad);
+    maxY = Math.min(h - 1, maxY + pad);
+
+    var sw = maxX - minX + 1;
+    var sh = maxY - minY + 1;
+    var sprite = document.createElement("canvas");
+    var base = document.createElement("canvas");
+    sprite.width = base.width = sw;
+    sprite.height = base.height = sh;
+
+    var sctx = sprite.getContext("2d");
+    var bctx = base.getContext("2d");
+    var sImg = sctx.createImageData(sw, sh);
+    var bImg = bctx.createImageData(sw, sh);
+
+    for (i = 0; i < pixelIndices.length; i++) {
+      pi = pixelIndices[i];
+      x = pi % w;
+      y = Math.floor(pi / w);
+      if (x < minX || y < minY || x > maxX || y > maxY) continue;
+
+      var srcI = pi * 4;
+      var localI = ((y - minY) * sw + (x - minX)) * 4;
+      var alpha = Math.round(clamp((conf[pi] - 58) / 150, 0, 1) * 255);
+
+      sImg.data[localI] = src[srcI];
+      sImg.data[localI + 1] = src[srcI + 1];
+      sImg.data[localI + 2] = src[srcI + 2];
+      sImg.data[localI + 3] = alpha;
+
+      bImg.data[localI] = avgData[srcI];
+      bImg.data[localI + 1] = avgData[srcI + 1];
+      bImg.data[localI + 2] = avgData[srcI + 2];
+      bImg.data[localI + 3] = Math.round(alpha * 0.92);
+    }
+
+    sctx.putImageData(sImg, 0, 0);
+    bctx.putImageData(bImg, 0, 0);
+
+    var radius = 0.5 * Math.sqrt(
+      (maxX - minX + 1) * (maxX - minX + 1) +
+      (maxY - minY + 1) * (maxY - minY + 1)
+    );
+
+    return {
+      cx: cx,
+      cy: cy,
+      relX: minX - cx,
+      relY: minY - cy,
+      width: sw,
+      height: sh,
+      radius: radius,
+      sprite: sprite,
+      base: base,
+      seed: deterministicSeed(cx, cy),
+      ox: 0,
+      oy: 0,
+      vx: 0,
+      vy: 0,
+      z: 0,
+      vz: 0,
+      angle: 0,
+      va: 0
+    };
+  }
+
+  function buildGroups(work, maskResult) {
+    var w = work.width;
+    var h = work.height;
+    var components = connectedComponents(maskResult.confidence, w, h);
+    var pixelGroups = [];
+
+    for (var i = 0; i < components.length; i++) {
+      var split = splitLargeComponent(components[i], w);
+      for (var j = 0; j < split.length; j++) {
+        pixelGroups.push(split[j]);
+      }
+    }
+
+    // Prefer stronger, meaningful structures and cap CPU/memory use.
+    pixelGroups.sort(function (a, b) { return b.length - a.length; });
+    if (pixelGroups.length > 420) pixelGroups.length = 420;
+
+    var groups = [];
+    for (i = 0; i < pixelGroups.length; i++) {
+      var group = makeGroup(pixelGroups[i], work, maskResult);
+      if (group) groups.push(group);
+    }
+
+    return groups;
+  }
+
+  function createGroupedInteraction(opts) {
     var wrap = opts.container;
     var img = opts.image;
     var canvas = opts.canvas;
@@ -286,14 +437,14 @@
     var work = document.createElement("canvas");
     work.width = 360;
     work.height = Math.max(1, Math.round(360 * displayH / displayW));
+
     var wctx = work.getContext("2d");
     paintCover(wctx, img, pos, work.width, work.height);
 
     var maskResult = buildMask(work, opts.mask || null, pos);
-    var particles = spawnParticles(work, maskResult, opts.count || 5200);
-    if (!particles) return null;
+    var groups = buildGroups(work, maskResult);
+    if (!groups.length) return null;
 
-    // Overlay only. Never replace or hide the real photograph.
     img.style.opacity = "1";
     canvas.style.opacity = "1";
     canvas.style.zIndex = "1";
@@ -340,8 +491,8 @@
     function localPoint(e) {
       var r = wrap.getBoundingClientRect();
       if (!r.width || !r.height) return;
-      cursor.x = clamp((e.clientX - r.left) / r.width, 0, 1);
-      cursor.y = clamp((e.clientY - r.top) / r.height, 0, 1);
+      cursor.x = clamp(e.clientX - r.left, 0, r.width);
+      cursor.y = clamp(e.clientY - r.top, 0, r.height);
       kick();
     }
 
@@ -369,62 +520,77 @@
       var sz = sizeCanvas();
       var w = sz.w;
       var h = sz.h;
-      var minDim = Math.min(w, h);
-      var radius = 72 / minDim;
-      var maxPush = 28 / minDim;
-      var spring = 105;
-      var damping = 17;
-      var damp = Math.exp(-damping * dt);
+      var scaleX = w / work.width;
+      var scaleY = h / work.height;
+      var minScale = Math.min(scaleX, scaleY);
+      var spring = 90;
+      var damp = Math.exp(-15 * dt);
       var anyMoving = false;
       var activeCount = 0;
 
       ctx.clearRect(0, 0, w, h);
 
-      for (var i = 0; i < particles.length; i++) {
-        var p = particles[i];
-        var tx = p.hx;
-        var ty = p.hy;
-        var tz = 0;
+      for (var i = 0; i < groups.length; i++) {
+        var g = groups[i];
+        var homeX = g.cx * scaleX;
+        var homeY = g.cy * scaleY;
+        var radiusPx = g.radius * minScale;
+        var targetX = 0;
+        var targetY = 0;
+        var targetZ = 0;
+        var targetAngle = 0;
         var influence = 0;
 
         if (cursor.x >= 0) {
-          var dx = p.hx - cursor.x;
-          var dy = p.hy - cursor.y;
+          var dx = homeX - cursor.x;
+          var dy = homeY - cursor.y;
           var dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < radius) {
-            influence = 1 - dist / radius;
+          var edgeDist = Math.max(0, dist - radiusPx * 0.48);
+          var field = 68 + Math.min(22, radiusPx * 0.18);
+
+          if (edgeDist < field) {
+            influence = 1 - edgeDist / field;
             influence = influence * influence * (3 - 2 * influence);
-            var inv = 1 / Math.max(dist, 0.0001);
-            var nx = dx * inv;
-            var ny = dy * inv;
-            var travel = maxPush * influence * (0.78 + p.seed * 0.44);
-            tx = p.hx + nx * travel;
-            ty = p.hy + ny * travel;
-            tz = influence * (0.55 + p.seed * 0.45);
+
+            if (dist < 0.001) {
+              dx = g.seed - 0.5;
+              dy = 0.5 - deterministicSeed(g.cy, g.cx);
+              dist = Math.sqrt(dx * dx + dy * dy) || 1;
+            }
+
+            var nx = dx / dist;
+            var ny = dy / dist;
+            var push = (18 + Math.min(14, radiusPx * 0.16)) * influence;
+            targetX = nx * push;
+            targetY = ny * push;
+            targetZ = influence;
+            targetAngle = (g.seed - 0.5) * 0.13 * influence;
           }
         }
 
-        p.vx += (tx - p.x) * spring * dt;
-        p.vy += (ty - p.y) * spring * dt;
-        p.vz += (tz - p.z) * 92 * dt;
-        p.vx *= damp;
-        p.vy *= damp;
-        p.vz *= Math.exp(-15 * dt);
-        p.x += p.vx * dt;
-        p.y += p.vy * dt;
-        p.z += p.vz * dt;
+        g.vx += (targetX - g.ox) * spring * dt;
+        g.vy += (targetY - g.oy) * spring * dt;
+        g.vz += (targetZ - g.z) * 74 * dt;
+        g.va += (targetAngle - g.angle) * 64 * dt;
 
-        var offX = p.x - p.hx;
-        var offY = p.y - p.hy;
-        var displacement = Math.sqrt(offX * offX + offY * offY);
-        var visuallyActive = influence > 0.012 || displacement > 0.00045 || p.z > 0.012;
+        g.vx *= damp;
+        g.vy *= damp;
+        g.vz *= Math.exp(-13 * dt);
+        g.va *= Math.exp(-14 * dt);
 
-        if (!visuallyActive) {
+        g.ox += g.vx * dt;
+        g.oy += g.vy * dt;
+        g.z += g.vz * dt;
+        g.angle += g.va * dt;
+
+        var motion = Math.sqrt(g.ox * g.ox + g.oy * g.oy);
+        var active = influence > 0.01 || motion > 0.16 || Math.abs(g.z) > 0.01 || Math.abs(g.angle) > 0.002;
+
+        if (!active) {
           if (cursor.x < 0) {
-            p.x = p.hx;
-            p.y = p.hy;
-            p.z = 0;
-            p.vx = p.vy = p.vz = 0;
+            g.ox = g.oy = g.vx = g.vy = 0;
+            g.z = g.vz = 0;
+            g.angle = g.va = 0;
           }
           continue;
         }
@@ -432,73 +598,51 @@
         anyMoving = true;
         activeCount++;
 
-        var homeX = p.hx * w;
-        var homeY = p.hy * h;
-        var liftPx = p.z * (7 + p.seed * 9);
-        var px = p.x * w;
-        var py = p.y * h - liftPx;
-        var scale = 1 + p.z * 0.36;
-        var s = p.size * scale;
-        var hole = Math.max(1.15, p.size * 0.82);
+        var holeAlpha = clamp(motion / 5 + g.z * 0.72, 0, 0.96);
 
-        // Hide only the tiny home spot that actually lost pigment.
-        var holeAlpha = clamp((displacement * minDim) / 4.5 + p.z * 0.65, 0, 0.92);
-        if (holeAlpha > 0.03) {
-          ctx.fillStyle = "rgba(" + p.br + "," + p.bg + "," + p.bb + "," + holeAlpha + ")";
-          ctx.beginPath();
-          ctx.ellipse(homeX, homeY, hole * 0.72, hole * 0.52, p.ang, 0, Math.PI * 2);
-          ctx.fill();
-        }
-
-        if (p.z > 0.035) {
-          ctx.fillStyle = "rgba(12,6,8," + clamp(p.z * 0.20, 0, 0.20) + ")";
-          ctx.beginPath();
-          ctx.ellipse(
-            px + 1.2,
-            py + 2.5 + liftPx * 0.26,
-            s * 0.62,
-            s * 0.28,
-            p.ang,
-            0,
-            Math.PI * 2
-          );
-          ctx.fill();
-        }
-
-        var shade = 0.92 + p.z * 0.12;
-        var rr = Math.round(clamp(p.r * shade, 0, 255));
-        var gg = Math.round(clamp(p.g * shade, 0, 255));
-        var bb = Math.round(clamp(p.b * shade, 0, 255));
-
+        // Reveal only the exact masked structure that moved away.
         ctx.save();
-        ctx.translate(px, py);
-        ctx.rotate(p.ang + (p.seed - 0.5) * p.z * 0.8);
-        ctx.fillStyle = "rgb(" + rr + "," + gg + "," + bb + ")";
-        ctx.beginPath();
-        ctx.moveTo(-s * 0.58, -s * 0.10);
-        ctx.lineTo(-s * 0.12, -s * 0.48 * p.aspect);
-        ctx.lineTo(s * 0.56, -s * 0.08);
-        ctx.lineTo(s * 0.20, s * 0.42 * p.aspect);
-        ctx.lineTo(-s * 0.42, s * 0.30 * p.aspect);
-        ctx.closePath();
-        ctx.fill();
+        ctx.globalAlpha = holeAlpha;
+        ctx.translate(homeX, homeY);
+        ctx.scale(scaleX, scaleY);
+        ctx.drawImage(g.base, g.relX, g.relY);
         ctx.restore();
+
+        // Draw the feature as one rigid masked sprite.
+        ctx.save();
+        ctx.translate(homeX + g.ox, homeY + g.oy - g.z * 5);
+        ctx.rotate(g.angle);
+        var liftScale = 1 + g.z * 0.045;
+        ctx.scale(scaleX * liftScale, scaleY * liftScale);
+        ctx.shadowColor = "rgba(10,4,7," + clamp(g.z * 0.30, 0, 0.24) + ")";
+        ctx.shadowBlur = g.z * 6;
+        ctx.shadowOffsetY = g.z * 3;
+        ctx.drawImage(g.sprite, g.relX, g.relY);
+        ctx.restore();
+
+        if (debug) {
+          ctx.strokeStyle = "rgba(243,193,90,.28)";
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.arc(homeX, homeY, Math.max(2, radiusPx * 0.35), 0, Math.PI * 2);
+          ctx.stroke();
+        }
       }
 
       if (debug && cursor.x >= 0) {
-        ctx.strokeStyle = "rgba(243,193,90,.55)";
+        ctx.strokeStyle = "rgba(243,193,90,.65)";
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.arc(cursor.x * w, cursor.y * h, 72, 0, Math.PI * 2);
+        ctx.arc(cursor.x, cursor.y, 68, 0, Math.PI * 2);
         ctx.stroke();
       }
 
       if (hud) {
         hud.textContent =
-          particles.length + " candidates · " +
+          groups.length + " rigid groups · " +
           activeCount + " active · " +
           fps + " fps · " +
-          (maskResult.explicit ? "explicit mask" : "auto mask");
+          (maskResult.explicit ? "explicit mask" : "auto segmentation");
       }
 
       if (cursor.x >= 0 || anyMoving) {
@@ -511,7 +655,7 @@
     }
 
     return {
-      particles: particles,
+      groups: groups,
       destroy: function () {
         if (raf) cancelAnimationFrame(raf);
         running = false;
@@ -527,17 +671,12 @@
     panel.appendChild(canvas);
 
     function start() {
-      Promise.all([
-        loadOptional(img.getAttribute("data-ink-mask")),
-        loadOptional(img.getAttribute("data-ink-skin"))
-      ]).then(function (pair) {
-        createInkInteraction({
+      loadOptional(img.getAttribute("data-ink-mask")).then(function (mask) {
+        createGroupedInteraction({
           container: panel,
           image: img,
           canvas: canvas,
-          mask: pair[0],
-          cleanPlate: pair[1],
-          count: 5200
+          mask: mask
         });
       });
     }
@@ -548,6 +687,8 @@
 
   document.querySelectorAll(".mosaic .panel").forEach(function (panel) {
     var img = panel.querySelector("img");
+
+    // Amanda's seated artist portrait is intentionally excluded.
     if (!img || img.getAttribute("data-no-ink")) return;
 
     var armed = false;
