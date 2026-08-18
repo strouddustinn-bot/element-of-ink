@@ -6,9 +6,9 @@
     if (!el || !fine || reduce) return;
     el.addEventListener("pointermove", function (e) {
       var r = el.getBoundingClientRect();
-      var x = e.clientX - (r.left + r.width / 2);
-      var y = e.clientY - (r.top + r.height / 2);
-      el.style.transform = "translate(" + (x * 0.16) + "px," + (y * 0.16) + "px)";
+      el.style.transform = "translate(" +
+        ((e.clientX - (r.left + r.width / 2)) * 0.16) + "px," +
+        ((e.clientY - (r.top + r.height / 2)) * 0.16) + "px)";
     });
     el.addEventListener("pointerleave", function () {
       el.style.transform = "";
@@ -63,201 +63,179 @@
     );
   }
 
-  function splitPlates(img, pos, size) {
-    var plate = document.createElement("canvas");
-    plate.width = size;
-    plate.height = size;
-    var pctx = plate.getContext("2d", { willReadFrequently: true });
-    if (!pctx) return null;
+  function buildShards(img, pos) {
+    var COLS = 22;
+    var ROWS = 28;
+    var src = document.createElement("canvas");
+    src.width = COLS * 12;
+    src.height = ROWS * 12;
+    var sctx = src.getContext("2d", { willReadFrequently: true });
+    if (!sctx) return null;
     try {
-      paintCover(pctx, img, pos, size, size);
+      paintCover(sctx, img, pos, src.width, src.height);
     } catch (err) {
       return null;
     }
-    var data;
-    try {
-      data = pctx.getImageData(0, 0, size, size);
-    } catch (err) {
-      return null;
-    }
-    var px = data.data;
-    var n = size * size;
-    var isInk = new Uint8Array(n);
-    var i, x, y, o, lum, ink;
-    for (i = 0; i < n; i++) {
-      o = i * 4;
-      lum = (px[o] * 0.299 + px[o + 1] * 0.587 + px[o + 2] * 0.114) / 255;
-      ink = 1 - lum;
-      isInk[i] = ink > 0.2 ? 1 : 0;
-    }
-
-    var skin = document.createElement("canvas");
-    skin.width = size;
-    skin.height = size;
-    var sctx = skin.getContext("2d");
-    var skinData = pctx.getImageData(0, 0, size, size);
-    var sp = skinData.data;
-    var pass, j, k, cx, cy, r, g, b, c, ii, oo;
-    for (pass = 0; pass < 2; pass++) {
-      var next = new Uint8ClampedArray(sp);
-      for (y = 0; y < size; y++) {
-        for (x = 0; x < size; x++) {
-          i = y * size + x;
-          if (!isInk[i]) continue;
-          r = 0; g = 0; b = 0; c = 0;
-          for (j = -2; j <= 2; j++) {
-            cy = y + j;
-            if (cy < 0 || cy >= size) continue;
-            for (k = -2; k <= 2; k++) {
-              cx = x + k;
-              if (cx < 0 || cx >= size) continue;
-              ii = cy * size + cx;
-              if (isInk[ii] && pass === 0) continue;
-              if (isInk[ii] && next[ii * 4 + 3] === 0) continue;
-              oo = ii * 4;
-              if (sp[oo + 3] < 8) continue;
-              r += sp[oo];
-              g += sp[oo + 1];
-              b += sp[oo + 2];
-              c++;
-            }
-          }
-          o = i * 4;
-          if (c) {
-            next[o] = r / c;
-            next[o + 1] = g / c;
-            next[o + 2] = b / c;
-            next[o + 3] = 255;
-          }
-        }
-      }
-      sp.set(next);
-    }
-    sctx.putImageData(skinData, 0, 0);
-
-    var inkPlate = document.createElement("canvas");
-    inkPlate.width = size;
-    inkPlate.height = size;
-    var ictx = inkPlate.getContext("2d");
-    var inkData = pctx.getImageData(0, 0, size, size);
-    var ip = inkData.data;
-    for (i = 0; i < n; i++) {
-      if (!isInk[i]) ip[i * 4 + 3] = 0;
-    }
-    ictx.putImageData(inkData, 0, 0);
-
-    var COLS = 16;
-    var ROWS = 16;
-    var cw = size / COLS;
-    var ch = size / ROWS;
+    var cellW = src.width / COLS;
+    var cellH = src.height / ROWS;
     var shards = [];
-    var row, col, count, pxCount, sy, sx, fy, fx, idx;
-    for (row = 0; row < ROWS; row++) {
-      for (col = 0; col < COLS; col++) {
-        count = 0;
-        pxCount = 0;
-        for (sy = 0; sy < ch; sy++) {
-          fy = Math.floor(row * ch + sy);
-          for (sx = 0; sx < cw; sx++) {
-            fx = Math.floor(col * cw + sx);
-            idx = fy * size + fx;
-            pxCount++;
-            if (isInk[idx]) count++;
-          }
+    var j, i;
+    for (j = 0; j < ROWS; j++) {
+      for (i = 0; i < COLS; i++) {
+        var x = Math.floor(i * cellW);
+        var y = Math.floor(j * cellH);
+        var w = Math.ceil(cellW);
+        var h = Math.ceil(cellH);
+        var data;
+        try {
+          data = sctx.getImageData(x, y, w, h).data;
+        } catch (err) {
+          return null;
         }
-        if (count < pxCount * 0.08) continue;
+        var p, ink = 0, count = 0;
+        for (p = 0; p < data.length; p += 4) {
+          var lum = (data[p] * 0.299 + data[p + 1] * 0.587 + data[p + 2] * 0.114) / 255;
+          var a = data[p + 3] / 255;
+          if (a < 0.2) continue;
+          count += 1;
+          if (lum < 0.46) ink += 1;
+        }
+        if (!count || ink / count < 0.18) continue;
+        var tile = document.createElement("canvas");
+        tile.width = w;
+        tile.height = h;
+        var tctx = tile.getContext("2d");
+        var copy = sctx.getImageData(x, y, w, h);
+        var q;
+        for (q = 0; q < copy.data.length; q += 4) {
+          var L = (copy.data[q] * 0.299 + copy.data[q + 1] * 0.587 + copy.data[q + 2] * 0.114) / 255;
+          if (L >= 0.46) copy.data[q + 3] = 0;
+        }
+        tctx.putImageData(copy, 0, 0);
         shards.push({
-          sx: col * cw,
-          sy: row * ch,
-          sw: cw,
-          sh: ch,
-          x: 0,
-          y: 0,
-          tx: 0,
-          ty: 0
+          tile: tile,
+          u: i / COLS,
+          v: j / ROWS,
+          uw: 1 / COLS,
+          vh: 1 / ROWS,
+          dens: ink / count,
+          ox: 0,
+          oy: 0
         });
       }
     }
-    if (!shards.length) return null;
-    return { skin: skin, ink: inkPlate, shards: shards, size: size };
+    var skin = document.createElement("canvas");
+    skin.width = src.width;
+    skin.height = src.height;
+    var kctx = skin.getContext("2d");
+    kctx.drawImage(src, 0, 0);
+    var plate = kctx.getImageData(0, 0, skin.width, skin.height);
+    var pd = plate.data;
+    var n, skinR = 0, skinG = 0, skinB = 0, skinN = 0;
+    for (n = 0; n < pd.length; n += 4) {
+      var sl = (pd[n] * 0.299 + pd[n + 1] * 0.587 + pd[n + 2] * 0.114) / 255;
+      if (sl >= 0.46 && pd[n + 3] > 40) {
+        skinR += pd[n];
+        skinG += pd[n + 1];
+        skinB += pd[n + 2];
+        skinN += 1;
+      }
+    }
+    if (skinN) {
+      skinR = Math.round(skinR / skinN);
+      skinG = Math.round(skinG / skinN);
+      skinB = Math.round(skinB / skinN);
+      for (n = 0; n < pd.length; n += 4) {
+        var il = (pd[n] * 0.299 + pd[n + 1] * 0.587 + pd[n + 2] * 0.114) / 255;
+        if (il < 0.46) {
+          pd[n] = skinR;
+          pd[n + 1] = skinG;
+          pd[n + 2] = skinB;
+        }
+      }
+      kctx.putImageData(plate, 0, 0);
+    }
+    return shards.length ? { shards: shards, skin: skin } : null;
   }
 
-  function bindRelief(wrap, img, canvas) {
+  function bindShards(wrap, img, canvas) {
     if (!wrap || !img || !canvas) return;
     function start() {
       if (!img.naturalWidth) return;
       var ctx = canvas.getContext("2d");
       if (!ctx) return;
       var pos = parsePos(img);
-      var pack = splitPlates(img, pos, 256);
+      var pack = buildShards(img, pos);
       if (!pack) return;
+      var shards = pack.shards;
+      var skin = pack.skin;
 
-      var local = { x: 0.5, y: 0.45, tx: 0.5, ty: 0.45, on: false };
+      var cursor = { x: -1, y: -1 };
       wrap.classList.add("is-live");
 
-      function track(e) {
+      function localPoint(e) {
         var r = wrap.getBoundingClientRect();
         if (!r.width || !r.height) return;
-        local.tx = (e.clientX - r.left) / r.width;
-        local.ty = (e.clientY - r.top) / r.height;
-        local.on = true;
+        cursor.x = (e.clientX - r.left) / r.width;
+        cursor.y = (e.clientY - r.top) / r.height;
       }
-      wrap.addEventListener("pointermove", track, { passive: true });
-      wrap.addEventListener("pointerenter", track, { passive: true });
-      wrap.addEventListener("pointerleave", function () {
-        local.on = false;
-      });
+      function clearPoint() {
+        cursor.x = -1;
+        cursor.y = -1;
+      }
+
+      wrap.addEventListener("pointermove", localPoint, { passive: true });
+      wrap.addEventListener("pointerenter", localPoint, { passive: true });
+      wrap.addEventListener("pointerleave", clearPoint);
+      if (wrap.parentElement && wrap.parentElement.classList.contains("hero")) {
+        wrap.parentElement.addEventListener("pointermove", localPoint, { passive: true });
+        wrap.parentElement.addEventListener("pointerleave", clearPoint);
+      }
 
       function draw() {
-        local.x += (local.tx - local.x) * 0.2;
-        local.y += (local.ty - local.y) * 0.2;
-
         var w = canvas.clientWidth || wrap.clientWidth;
         var h = canvas.clientHeight || wrap.clientHeight;
         if (w >= 8 && h >= 8) {
           if (canvas.width !== w) canvas.width = w;
           if (canvas.height !== h) canvas.height = h;
-          var scale = w / pack.size;
-          var mx = local.x * w;
-          var my = local.y * h;
-          var radius = Math.min(w, h) * 0.38;
-          var spread = Math.min(w, h) * 0.16;
+
+          var reach = Math.min(w, h) * 0.12;
+          var s;
+          for (s = 0; s < shards.length; s++) {
+            var sh = shards[s];
+            var cx = (sh.u + sh.uw * 0.5) * w;
+            var cy = (sh.v + sh.vh * 0.5) * h;
+            var tx = 0;
+            var ty = 0;
+            if (cursor.x >= 0) {
+              var dx = cx - cursor.x * w;
+              var dy = cy - cursor.y * h;
+              var d = Math.sqrt(dx * dx + dy * dy);
+              var t = 1 - Math.min(d / reach, 1);
+              t = t * t * (3 - 2 * t);
+              if (t > 0.001) {
+                var push = t * (22 + sh.dens * 18);
+                tx = (dx / (d + 6)) * push;
+                ty = (dy / (d + 6)) * push;
+              }
+            }
+            sh.ox += (tx - sh.ox) * 0.22;
+            sh.oy += (ty - sh.oy) * 0.22;
+          }
 
           ctx.clearRect(0, 0, w, h);
-          ctx.drawImage(pack.skin, 0, 0, w, h);
-
-          var s, cx, cy, dx, dy, dist, push, nx, ny;
-          for (var i = 0; i < pack.shards.length; i++) {
-            s = pack.shards[i];
-            cx = (s.sx + s.sw / 2) * scale;
-            cy = (s.sy + s.sh / 2) * scale;
-            if (local.on) {
-              dx = cx - mx;
-              dy = cy - my;
-              dist = Math.sqrt(dx * dx + dy * dy) || 0.001;
-              push = Math.max(0, 1 - dist / radius);
-              push = push * push;
-              nx = dx / dist;
-              ny = dy / dist;
-              s.tx = nx * push * spread;
-              s.ty = ny * push * spread - push * 10;
-            } else {
-              s.tx = 0;
-              s.ty = 0;
-            }
-            s.x += (s.tx - s.x) * (local.on ? 0.28 : 0.16);
-            s.y += (s.ty - s.y) * (local.on ? 0.28 : 0.16);
-            if (!local.on && Math.abs(s.x) < 0.2 && Math.abs(s.y) < 0.2) {
-              s.x = 0;
-              s.y = 0;
-            }
+          ctx.drawImage(skin, 0, 0, w, h);
+          for (s = 0; s < shards.length; s++) {
+            sh = shards[s];
+            var dw = sh.uw * w + 1;
+            var dh = sh.vh * h + 1;
             ctx.drawImage(
-              pack.ink,
-              s.sx, s.sy, s.sw, s.sh,
-              s.sx * scale + s.x,
-              s.sy * scale + s.y,
-              s.sw * scale,
-              s.sh * scale
+              sh.tile,
+              0, 0, sh.tile.width, sh.tile.height,
+              sh.u * w + sh.ox,
+              sh.v * h + sh.oy,
+              dw,
+              dh
             );
           }
         }
@@ -271,18 +249,24 @@
 
   var hero = document.getElementById("hero-photo");
   if (hero) {
-    bindRelief(hero, document.getElementById("hero-img"), document.getElementById("hero-live"));
+    bindShards(hero, document.getElementById("hero-img"), document.getElementById("hero-live"));
   }
 
-  document.querySelectorAll(".mosaic .panel").forEach(function (panel, index) {
+  document.querySelectorAll(".mosaic .panel").forEach(function (panel) {
     var img = panel.querySelector("img");
     if (!img) return;
     var canvas = document.createElement("canvas");
     canvas.className = "ink-live";
     canvas.setAttribute("aria-hidden", "true");
     panel.appendChild(canvas);
-    window.setTimeout(function () {
-      bindRelief(panel, img, canvas);
-    }, 80 + index * 60);
+    var armed = false;
+    function arm() {
+      if (armed) return;
+      armed = true;
+      bindShards(panel, img, canvas);
+    }
+    panel.addEventListener("pointerenter", arm);
+    if (img.complete && img.naturalWidth) arm();
+    else img.addEventListener("load", arm, { once: true });
   });
 })();
