@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#160b10" />
+  <title>Proposal — Element of Ink</title>
+  <style>
+    @font-face {
+      font-family: Needlehide;
+      src: url("fonts/Needlehide-Regular.ttf") format("truetype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "Cormorant Garamond";
+      src: url("fonts/CormorantGaramond-Italic.ttf") format("truetype");
+      font-weight: 400;
+      font-style: italic;
+      font-display: swap;
+    }
+    :root {
+      --void: #160b10;
+      --bone: #f3e6d2;
+      --dust: #c4a48a;
+      --gold: #e0b45a;
+      --line: rgba(224,180,90,.22);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: linear-gradient(180deg, #1c0d12, #160b10 40%, #0f070a);
+      color: var(--bone);
+      font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Times New Roman", serif;
+      line-height: 1.6;
+    }
+    .wrap { width: min(820px, calc(100% - 40px)); margin: 0 auto; padding: 56px 0 80px; }
+    .brand { font-family: Needlehide, serif; font-size: 34px; }
+    .eyebrow { color: var(--gold); letter-spacing: .28em; text-transform: uppercase; font-size: 11px; margin: 10px 0 28px; }
+    h1 {
+      font-family: Needlehide, serif;
+      font-size: clamp(34px, 6vw, 56px);
+      line-height: 1.05;
+      margin-bottom: 16px;
+      font-weight: 400;
+    }
+    h2 { font-family: Needlehide, serif; font-size: 28px; margin: 36px 0 12px; color: var(--gold); font-weight: 400; }
+    p, li { color: #ead9c4; }
+    .lede {
+      font-family: "Cormorant Garamond", Georgia, serif;
+      font-size: 22px; font-style: italic; color: var(--dust); margin-bottom: 28px;
+    }
+    .card {
+      border: 1px solid var(--line);
+      background: rgba(42,18,24,.45);
+      padding: 22px 24px;
+      margin: 18px 0;
+    }
+    ul { padding-left: 1.2em; }
+    li { margin: 8px 0; }
+    .price {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px 20px;
+      align-items: baseline;
+    }
+    .amt { font-family: "Iowan Old Style", Palatino, "Times New Roman", serif; font-size: 28px; color: var(--gold); letter-spacing: .04em; }
+    .note { font-size: 13px; color: var(--dust); }
+    footer { margin-top: 48px; color: var(--dust); font-size: 13px; letter-spacing: .08em; }
+    .opt { margin: 14px 0; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+    .opt:last-child { border-bottom: 0; padding-bottom: 0; margin-bottom: 0; }
+    .opt strong { display: block; color: var(--gold); font-size: 17px; margin-bottom: 4px; }
+    .opt p { margin: 0; }
+  </style>
+</head>
+<body>
+  <article class="wrap">
+    <div class="brand">Element of Ink</div>
+    <p class="eyebrow">Private proposal for Amanda</p>
+    <h1>A site worthy of the work.</h1>
+    <p class="lede">People already hunt you down on Instagram. This gives them a place to land, stare, and book you — without drowning in DMs.</p>
+
+    <p>Amanda, your black-and-grey already looks expensive. This is the front door: the work, the dirt under the nails, and a giant Book with Amanda button. No clutter. A parlor site that feels like a shop.</p>
+
+    <h2>What you get</h2>
+    <div class="card">
+      <ul>
+        <li>A one-page studio site built around your actual tattoos — not stock photos.</li>
+        <li>In-your-face booking: name, email, what they want, Book with Amanda. A first-timer can do it.</li>
+        <li>A custom parlor face and shop talk that matches the work, not a barber-shop template.</li>
+        <li>Your handle and email on the page so Instagram stops being the only door.</li>
+        <li>Room to grow into a real booking system without rebuilding the look.</li>
+      </ul>
+    </div>
+
+    <h2>The schema backend</h2>
+    <p>A schema is just a strict list of fields: name, email, piece, placement, size, date. The backend is the locked drawer that stores those fields instead of a pile of Instagram DMs.</p>
+    <div class="card">
+      <ul>
+        <li>Every inquiry lands as a clean card you can sort — not a screenshot of a chat.</li>
+        <li>You stop losing people who messaged, got buried, and booked someone else.</li>
+        <li>Google can read a LocalBusiness schema and treat Element of Ink like a real parlor — hours, city, booking — so new clients find you outside the algorithm.</li>
+        <li>When you want deposits, waitlists, or this date is taken, the structure is already there. No starting over.</li>
+      </ul>
+    </div>
+    <p>Right now the page is the look. The schema backend is how the parlor actually runs once someone hits the red button.</p>
+
+    <h2>Why this sells the shop</h2>
+    <p>Instagram is a hallway. A site is the shop. Serious clients — cover-ups, sleeves, memorial pieces — want to see a body of work and a grown-up way to book. This makes you look booked, intentional, and expensive in the right way. That is how you raise your floor without raising your voice.</p>
+
+    <h2>Make it yours</h2>
+    <p>The page you have is the door. If Element of Ink is a house, not a solo chair, we can grow it without tearing the look down. Circle what you want. We do not build all of this unless you say so.</p>
+    <div class="card">
+      <div class="opt">
+        <strong>Meet the artists</strong>
+        <p>A row of house chairs. Photo, name, what they sit — black-and-grey, color, fine line, cover-ups — and a short blurb in their voice. Book with that artist, not a generic inbox. You send the pictures and two or three lines. We do not invent people.</p>
+      </div>
+      <div class="opt">
+        <strong>Flash wall</strong>
+        <p>Ready designs with a price or a “this one’s gone.” People book a piece, not a vibe.</p>
+      </div>
+      <div class="opt">
+        <strong>Aftercare</strong>
+        <p>One page. Wash it. Don’t pick it. When to come back. Cuts the “is this normal” DMs.</p>
+      </div>
+      <div class="opt">
+        <strong>Hours and the door</strong>
+        <p>When you’re open, the city, a map. Google already wants this. Walk-ins vs books, said once, clearly.</p>
+      </div>
+      <div class="opt">
+        <strong>Guest spots</strong>
+        <p>A date, a name, a few shots. Comes down when they leave town. Keeps the site feeling alive.</p>
+      </div>
+      <div class="opt">
+        <strong>Healed work</strong>
+        <p>Fresh next to healed. Serious clients hunt that. It also shuts up the “will this last” crowd.</p>
+      </div>
+      <div class="opt">
+        <strong>Cover-up stories</strong>
+        <p>Before, after, one paragraph. Cover-ups pay. Show you eat them.</p>
+      </div>
+      <div class="opt">
+        <strong>Deposits and books</strong>
+        <p>Hold the date. Waitlist when you’re full. The locked drawer already has the fields. This is the lock on the door.</p>
+      </div>
+      <div class="opt">
+        <strong>Shop rules</strong>
+        <p>Age. Consent. No drunk sits. Said like a parlor, not a lawyer. Saves you the speech at the door.</p>
+      </div>
+      <div class="opt">
+        <strong>Merch</strong>
+        <p>A few shirts, a print, a gift card. Only if you actually sell them. Dead buttons look cheap.</p>
+      </div>
+    </div>
+    <p class="note">Extras get priced when you pick them. Small add, not a rebuild.</p>
+
+    <h2>Fair valuation</h2>
+    <div class="card price">
+      <div>
+        <strong>Look and landing page, as designed</strong>
+        <p class="note">Custom one-page studio site, copy, your work, booking face. What you can show today.</p>
+      </div>
+      <div class="amt">$1,800</div>
+      <div>
+        <strong>Live site plus schema backend</strong>
+        <p class="note">Hosted URL, working Book with Amanda, inquiry inbox, Schema.org parlor markup for Google.</p>
+      </div>
+      <div class="amt">$3,400</div>
+      <div>
+        <strong>Optional care</strong>
+        <p class="note">New pieces, copy tweaks, uptime. Cancel anytime.</p>
+      </div>
+      <div class="amt">$150/mo</div>
+    </div>
+    <p>That is friend-honest, not agency theater. A shop of this caliber usually pays $2,500–$6,000 for a custom one-pager with booking. Twenty thousand is what a downtown studio pays a firm for a full brand system. You do not need that. You need this door, then the drawer behind it.</p>
+
+    <h2>Next</h2>
+    <p>The live look is up at <a href="https://strouddustinn-bot.github.io/element-of-ink/">this preview</a>. If you want it, we put it on your own domain and wire Book with Amanda into a real inbox. If you don't, I take the preview down the same day. Circle anything under Make it yours. You keep tattooing. The site takes the first conversation.</p>
+
+    <footer>
+      Prepared for Amanda · Element of Ink · @SUMDIRTYGINGE<br />
+      elementsofink@gmail.com
+    </footer>
+  </article>
+</body>
+</html>

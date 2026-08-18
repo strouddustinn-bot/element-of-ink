@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#160b10" />
+  <meta name="description" content="Element of Ink. Amanda. Black-and-grey realism. Sleeves, cover-ups, sit-down work. Book with Amanda." />
+  <title>Element of Ink — Book with Amanda</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect fill='%23160b10' width='32' height='32'/%3E%3Cpath fill='%23e0b45a' d='M16 4l2.2 7.2H26l-6.1 4.4 2.3 7.2L16 18.4l-6.2 4.4 2.3-7.2L6 11.2h7.8z'/%3E%3C/svg%3E" />
+  <style>
+    @font-face {
+      font-family: Needlehide;
+      src: url("fonts/Needlehide-Regular.ttf") format("truetype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "Cormorant Garamond";
+      src: url("fonts/CormorantGaramond-Regular.ttf") format("truetype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "Cormorant Garamond";
+      src: url("fonts/CormorantGaramond-Italic.ttf") format("truetype");
+      font-weight: 400;
+      font-style: italic;
+      font-display: swap;
+    }
+
+    :root {
+      --void: #160b10;
+      --velvet: #2a1218;
+      --bone: #f3e6d2;
+      --dust: #c4a48a;
+      --gold: #e0b45a;
+      --blood: #8b1e2d;
+      --line: rgba(224,180,90,.22);
+      --nav-h: 64px;
+      --dock-h: 72px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    @media (pointer: fine) {
+      html.has-orb, html.has-orb * { cursor: none; }
+      html.has-orb a, html.has-orb button, html.has-orb input, html.has-orb textarea, html.has-orb label {
+        cursor: none;
+      }
+    }
+    .orb {
+      position: fixed; left: 0; top: 0; z-index: 90;
+      width: 18px; height: 18px; margin: -9px 0 0 -9px;
+      border: 1.5px solid var(--gold);
+      border-radius: 50%;
+      pointer-events: none;
+      mix-blend-mode: difference;
+      transform: translate3d(-100px,-100px,0) scale(1);
+      transition: width .2s, height .2s, margin .2s, background .2s, border-color .2s;
+      display: none;
+    }
+    @media (pointer: fine) {
+      .orb { display: block; }
+    }
+    .orb.is-hot {
+      width: 56px; height: 56px; margin: -28px 0 0 -28px;
+      background: rgba(224,180,90,.12);
+      border-color: #fff;
+    }
+    .orb.is-ink {
+      width: 10px; height: 10px; margin: -5px 0 0 -5px;
+      background: #1a0c11; border-color: #1a0c11; mix-blend-mode: normal;
+    }
+    body {
+      position: relative;
+      background:
+        radial-gradient(1200px 520px at 12% -10%, rgba(139,30,45,.28), transparent 55%),
+        radial-gradient(900px 480px at 100% 8%, rgba(224,180,90,.08), transparent 46%),
+        linear-gradient(180deg, #1c0d12 0%, var(--void) 38%, #0f070a 100%);
+      color: var(--bone);
+      font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Times New Roman", serif;
+      line-height: 1.5;
+    }
+    a { color: inherit; text-decoration: none; }
+    img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    :focus-visible {
+      outline: 2px solid var(--gold);
+      outline-offset: 3px;
+    }
+    .skip {
+      position: absolute; left: 12px; top: -48px;
+      background: var(--gold); color: #1a1204;
+      padding: 10px 14px; z-index: 80; font-weight: 700;
+    }
+    .skip:focus { top: 12px; }
+
+    .open-bar {
+      text-align: center; font-size: 11px; letter-spacing: .28em; text-transform: uppercase;
+      padding: 8px; color: var(--gold); border-bottom: 1px solid var(--line);
+    }
+    nav {
+      position: sticky; top: 0; z-index: 40;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px;
+      padding: 12px 28px;
+      min-height: var(--nav-h);
+      background: rgba(22,11,16,.88);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--line);
+    }
+    .brand { font-family: Needlehide, serif; font-size: clamp(22px, 3vw, 28px); line-height: 1; }
+    .nav-cta {
+      background: var(--blood); color: #fff;
+      font-weight: 700; letter-spacing: .16em; text-transform: uppercase;
+      padding: 12px 18px; font-size: 12px;
+      box-shadow: 0 0 0 6px rgba(139,30,45,.18);
+      white-space: nowrap;
+    }
+    .nav-cta:hover { filter: brightness(1.08); }
+
+    .ink-rail {
+      position: fixed; left: 18px; top: 0; bottom: 0; width: 2px; z-index: 25;
+      background: rgba(224,180,90,.15);
+    }
+    .ink-rail i {
+      position: absolute; left: -3px; width: 8px; height: 8px; border-radius: 50%;
+      background: var(--gold); box-shadow: 0 0 16px var(--gold);
+      transform: translateY(-50%);
+    }
+    .ink-rail b {
+      display: block; width: 2px; background: linear-gradient(var(--gold), var(--blood));
+      transform-origin: top;
+    }
+
+    .hero {
+      position: relative;
+      min-height: calc(100svh - var(--nav-h) - 36px);
+      display: grid;
+      align-items: end;
+    }
+    .hero-photo {
+      position: absolute; inset: 0;
+      perspective: 1400px;
+      transform-style: preserve-3d;
+    }
+    .hero-photo img { object-position: 50% 46%; }
+    .hero-live {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      z-index: 1;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .7s ease;
+    }
+    .hero-photo.is-live .hero-live { opacity: 1; }
+    .hero-photo.is-live img { opacity: 0; }
+    .hero-photo::after {
+      content: ""; position: absolute; inset: 0;
+      background:
+        linear-gradient(90deg, rgba(16,8,11,.92) 0%, rgba(16,8,11,.62) 38%, rgba(16,8,11,.12) 68%, transparent 100%),
+        linear-gradient(180deg, transparent 55%, rgba(16,8,11,.55) 100%);
+    }
+    .hero-copy {
+      position: relative;
+      z-index: 2;
+      padding: 72px 48px 96px;
+      max-width: 38rem;
+    }
+    .verse {
+      font-family: "Cormorant Garamond", Georgia, serif;
+      font-style: italic; color: var(--gold); font-size: clamp(18px, 2.2vw, 22px); max-width: 28ch;
+    }
+    .cite {
+      display: block; margin-top: 8px; font-style: normal; letter-spacing: .28em;
+      font-size: 11px; text-transform: uppercase; color: var(--dust);
+    }
+    h1 {
+      font-family: Needlehide, serif;
+      font-size: clamp(56px, 8vw, 108px);
+      line-height: .88; margin: 22px 0 16px;
+    }
+    .lede { color: var(--dust); max-width: 38ch; font-size: 17px; }
+
+    .book-dock {
+      position: sticky; bottom: 0; z-index: 35;
+      background: #7a1826;
+      color: #fff;
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 28px;
+      padding-bottom: max(12px, env(safe-area-inset-bottom));
+      border-top: 3px solid var(--gold);
+    }
+    .book-dock b {
+      font-family: Needlehide, serif;
+      font-size: 24px; font-weight: 400; display: block; line-height: 1;
+    }
+    .book-dock span { opacity: .85; font-size: 13px; }
+    .big-book {
+      background: var(--gold); color: #1a1204;
+      font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+      padding: 16px 28px; font-size: 16px; border: 0; cursor: pointer;
+      white-space: nowrap;
+    }
+    .big-book:hover { filter: brightness(1.06); }
+
+    .marquee {
+      overflow: hidden; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+      background: #1a0c11;
+    }
+    .marquee p {
+      display: inline-block; white-space: nowrap; padding: 14px 0;
+      font-family: "Cormorant Garamond", Georgia, serif;
+      letter-spacing: .22em; text-transform: uppercase; font-size: 13px; color: var(--gold);
+      animation: slide 36s linear infinite;
+    }
+    @keyframes slide { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+    main section { padding: 88px 48px; }
+    .center { text-align: center; max-width: 720px; margin: 0 auto 40px; }
+    h2 { font-family: Needlehide, serif; font-size: clamp(42px, 6vw, 76px); font-weight: 400; }
+    .kicker { font-family: "Cormorant Garamond", Georgia, serif; font-style: italic; color: var(--dust); font-size: 22px; margin-top: 10px; }
+
+    .sound-toggle {
+      position: fixed;
+      left: 16px;
+      bottom: 196px;
+      z-index: 35;
+      border: 1px solid var(--line);
+      background: rgba(22,11,16,.78);
+      color: var(--gold);
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      font-size: 10px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      backdrop-filter: blur(8px);
+    }
+    .sound-toggle[aria-pressed="false"] { color: var(--dust); }
+    .yt-wrap {
+      position: fixed;
+      left: 16px;
+      bottom: 88px;
+      z-index: 34;
+      width: 160px;
+      height: 90px;
+    }
+    .yt-floor {
+      width: 100%;
+      height: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      overflow: hidden;
+      background: #160b10;
+      box-shadow: 0 12px 28px rgba(0,0,0,.45);
+    }
+    .yt-floor iframe { width: 100%; height: 100%; border: 0; display: block; }
+    .yt-open {
+      display: none;
+      width: 100%;
+      height: 100%;
+      align-items: center;
+      justify-content: center;
+      background: #160b10;
+      color: var(--gold);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      font-size: 11px;
+    }
+    html.is-local .yt-floor { display: none; }
+    html.is-local .yt-open { display: flex; }
+    html.is-local .sound-toggle { display: none; }
+    .yt-close {
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      z-index: 36;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 1px solid var(--line);
+      background: #160b10;
+      color: var(--gold);
+      font-size: 13px;
+      line-height: 1;
+      padding: 0;
+    }
+    .lightning {
+      position: fixed; inset: 0; z-index: 70;
+      pointer-events: none;
+      background:
+        radial-gradient(1200px 700px at 70% 0%, rgba(255,248,230,.95), transparent 55%),
+        rgba(244,236,220,.88);
+      opacity: 0;
+    }
+    .lightning.is-strike { animation: bolt .72s linear; }
+    @keyframes bolt {
+      0% { opacity: 0; }
+      6% { opacity: .95; }
+      11% { opacity: 0; }
+      18% { opacity: .62; }
+      24% { opacity: 0; }
+      42% { opacity: .18; }
+      50% { opacity: 0; }
+      100% { opacity: 0; }
+    }
+    .mosaic {
+      display: grid;
+      grid-template-columns: 1.15fr 1fr;
+      grid-auto-rows: minmax(360px, 46vh);
+      gap: 10px;
+      perspective: 1600px;
+    }
+    .mosaic .panel {
+      overflow: hidden; background: #2a1419; min-height: 0;
+      position: relative;
+      transform-style: preserve-3d;
+      box-shadow: 0 18px 40px rgba(0,0,0,.35);
+      transition: box-shadow .25s ease;
+    }
+    .mosaic .panel.is-up {
+      box-shadow: 0 28px 70px rgba(0,0,0,.55);
+      z-index: 2;
+    }
+    .mosaic .panel::after {
+      content: "";
+      position: absolute; inset: 0; pointer-events: none; z-index: 2;
+      background: radial-gradient(420px 280px at var(--lx, 50%) var(--ly, 32%), rgba(255,228,186,.28), transparent 58%);
+      mix-blend-mode: soft-light;
+      opacity: 0;
+      transition: opacity .25s ease;
+    }
+    .mosaic .panel.is-up::after { opacity: 1; }
+    .mosaic .tall { grid-row: span 2; }
+    .p-hero { object-position: 50% 46%; }
+    .p-kraken { object-position: 50% 46%; }
+    .p-cross { object-position: 50% 18%; }
+    .p-poseidon { object-position: 48% 38%; }
+    .p-wolf { object-position: 50% 55%; }
+    .p-reaper { object-position: 28% 40%; transform: scale(1.18); transform-origin: 28% 40%; }
+    .p-jaguar { object-position: 58% 36%; }
+    .p-time { object-position: 50% 48%; transform: scale(1.22); transform-origin: 50% 45%; }
+    .p-rhino { object-position: 48% 30%; }
+    .p-sleeve { object-position: 72% 38%; }
+    .p-back { object-position: 50% 36%; }
+    .p-shady { object-position: 48% 42%; }
+
+    .shout {
+      padding: 80px 24px; text-align: center;
+      background: radial-gradient(800px 240px at 50% 0, rgba(139,30,45,.28), transparent 70%), #1a0c11;
+      border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+    }
+    .ink {
+      font-family: Needlehide, serif;
+      font-size: clamp(28px, 4.6vw, 58px);
+      line-height: 1.2;
+      display: block;
+      max-width: 22ch;
+      margin: 0 auto;
+      color: #f0ddc0;
+      text-shadow:
+        0 1px 0 #1a0c11,
+        0 0 1px #3a1a14,
+        0 0 14px rgba(80, 20, 18, .35);
+    }
+    .ink i { font-style: normal; }
+    .ink.inked i {
+      animation: blot .45s ease-out both;
+      animation-delay: calc(var(--i) * 16ms);
+    }
+    @keyframes blot {
+      from { filter: contrast(1.35) brightness(.72); }
+      to { filter: none; }
+    }
+
+    #book {
+      background: linear-gradient(180deg, #2a1218, #160b10);
+      border-top: 1px solid var(--line);
+      scroll-margin-top: calc(var(--nav-h) + 12px);
+    }
+    .book-card {
+      max-width: 760px; margin: 0 auto;
+      background: #241016;
+      border: 1px solid var(--gold);
+      padding: 36px;
+      box-shadow: 0 30px 80px rgba(0,0,0,.45);
+    }
+    .book-card h2 { margin-bottom: 8px; }
+    .easy { display: grid; gap: 16px; margin-top: 24px; }
+    .field { display: grid; gap: 6px; }
+    .field label {
+      font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--dust);
+    }
+    .easy input, .easy textarea {
+      width: 100%; background: #1c1014; border: 2px solid #5a2a34;
+      color: var(--bone); padding: 16px; font: 400 1rem/1.3 "Iowan Old Style", Palatino, serif;
+      min-height: 52px;
+    }
+    .easy textarea { min-height: 110px; resize: vertical; }
+    .easy button {
+      width: 100%; background: var(--blood); color: #fff; border: 0; cursor: pointer;
+      font-weight: 800; letter-spacing: .14em; text-transform: uppercase;
+      padding: 22px; font-size: 20px;
+    }
+    .easy button:hover { filter: brightness(1.08); }
+    .hint { color: var(--dust); font-size: 13px; }
+    .hint a { color: var(--gold); text-decoration: underline; text-underline-offset: 3px; }
+    .done { display: none; text-align: center; padding: 28px 8px; }
+    .done h3 { font-family: Needlehide, serif; font-size: 42px; }
+
+    footer {
+      padding: 28px 48px 36px;
+      display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+      color: var(--dust); letter-spacing: .16em; text-transform: uppercase; font-size: 12px;
+    }
+    footer a:hover { color: var(--gold); }
+
+    .hide {
+      padding: 72px 24px 88px;
+      background: #14090c;
+      border-top: 1px solid var(--line);
+    }
+    .hide h2 { text-align: center; }
+    .hide .kicker { text-align: center; margin-bottom: 18px; }
+    .skin-tools {
+      display: flex; justify-content: center; gap: 10px; margin-bottom: 16px;
+    }
+    .skin-tools button {
+      background: transparent; color: var(--gold);
+      border: 1px solid var(--line); padding: 10px 18px;
+      letter-spacing: .16em; text-transform: uppercase; font-size: 12px; cursor: pointer;
+    }
+    .skin-tools button[aria-pressed="true"] {
+      background: var(--blood); color: #fff; border-color: var(--blood);
+    }
+    .pigskin {
+      position: relative;
+      width: min(920px, 100%);
+      height: 420px;
+      margin: 0 auto;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: inset 0 0 80px rgba(80,20,20,.28), 0 20px 50px rgba(0,0,0,.45);
+      background:
+        radial-gradient(ellipse 40% 30% at 22% 18%, rgba(255,230,210,.22), transparent 60%),
+        radial-gradient(ellipse 50% 40% at 78% 72%, rgba(92,38,28,.28), transparent 62%),
+        radial-gradient(ellipse 18% 14% at 62% 36%, rgba(140,70,48,.2), transparent 70%),
+        radial-gradient(ellipse 24% 18% at 34% 64%, rgba(90,42,30,.18), transparent 70%),
+        linear-gradient(165deg, #edd3b6 0%, #d4a47e 42%, #b57a58 78%, #9a6248 100%);
+      cursor: crosshair;
+    }
+    .pigskin.is-inking { outline: 2px solid var(--blood); }
+    .pigskin::before {
+      content: "";
+      position: absolute; inset: 0; pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.28'/%3E%3C/svg%3E");
+      mix-blend-mode: multiply; opacity: .45;
+    }
+    #ink-skin { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+    .pig-note {
+      text-align: center; margin-top: 14px;
+      color: var(--dust); font-size: 13px; letter-spacing: .08em; text-transform: uppercase;
+    }
+
+    @media (max-width: 900px) {
+      .hero-copy { padding: 40px 22px 32px; max-width: none; }
+      .hero-photo::after {
+        background:
+          linear-gradient(180deg, rgba(16,8,11,.2) 20%, rgba(16,8,11,.82) 100%);
+      }
+      .mosaic { grid-template-columns: 1fr 1fr; grid-auto-rows: 42vh; }
+      .mosaic .tall { grid-row: span 2; }
+      main section { padding: 64px 20px; }
+      .ink-rail { display: none; }
+      .book-dock { padding: 10px 16px; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
+      .book-dock span { display: none; }
+      .book-dock b { font-size: 18px; }
+      .big-book { padding: 14px 16px; font-size: 13px; }
+      .hide { display: none; }
+      footer { padding: 24px 20px 96px; }
+      .sound-toggle { bottom: 228px; left: 14px; }
+      .yt-wrap { left: 14px; bottom: 118px; width: 144px; height: 81px; }
+    }
+    @media (max-width: 560px) {
+      .mosaic { grid-template-columns: 1fr; }
+      .mosaic .tall { grid-row: auto; }
+      .mosaic .panel { height: 78vh; }
+      nav { padding: 10px 14px; }
+      .brand { max-width: 14ch; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .orb, .hero-live, .lightning { display: none !important; }
+      html.has-orb, html.has-orb * { cursor: auto; }
+      .marquee p { animation: none; }
+      .mosaic .panel, .nav-cta, .big-book, .easy button { transform: none !important; }
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      @supports ((animation-timeline: view()) and (animation-range: entry)) {
+        @keyframes rise-in {
+          from { transform: translateY(36px) rotateX(8deg); opacity: .55; }
+        }
+        .mosaic .panel {
+          animation: rise-in auto linear both;
+          animation-timeline: view();
+          animation-range: entry 0% entry 70%;
+        }
+      }
+    }
+  </style>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TattooParlor",
+    "name": "Element of Ink",
+    "description": "Black-and-grey realism by Amanda. Sleeves, cover-ups, sit-down work.",
+    "email": "elementsofink@gmail.com",
+    "founder": { "@type": "Person", "name": "Amanda" },
+    "sameAs": ["https://www.instagram.com/SUMDIRTYGINGE/"]
+  }
+  </script>
+</head>
+<body>
+  <div class="lightning" id="lightning" aria-hidden="true"></div>
+  <div class="yt-wrap" id="yt-wrap">
+    <button type="button" class="yt-close" id="yt-close" aria-label="Close">×</button>
+    <div class="yt-floor" id="yt-floor-box">
+      <iframe
+        id="yt-floor"
+        title="I'm Back — Eminem"
+        src=""
+        allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+        allowfullscreen
+      ></iframe>
+    </div>
+    <a class="yt-open" id="yt-open" href="https://www.youtube.com/watch?v=UimodeZfA9o" target="_blank" rel="noopener">I'm Back</a>
+  </div>
+  <button type="button" class="sound-toggle" id="sound-toggle" aria-pressed="true">Sound on</button>
+  <div class="orb" id="orb" aria-hidden="true"></div>
+  <a class="skip" href="#book">Skip to booking</a>
+  <div class="open-bar">Element of Ink · Books open</div>
+  <div class="ink-rail" aria-hidden="true"><b id="ink-fill"></b><i id="ink-needle"></i></div>
+  <nav>
+    <div class="brand">Element of Ink</div>
+    <a class="nav-cta" href="#book">Book with Amanda</a>
+  </nav>
+
+  <header class="hero">
+    <div class="hero-photo" id="hero-photo">
+      <img src="assets/tattoo-16.jpg" alt="Black-and-grey chest piece" width="720" height="1280" fetchpriority="high" class="p-hero" id="hero-img" />
+      <canvas class="hero-live" id="hero-live" aria-hidden="true"></canvas>
+    </div>
+    <div class="hero-copy">
+      <p class="verse">Sit still. Bleed pretty.</p>
+      <span class="cite">Shop floor</span>
+      <h1>Element of Ink</h1>
+      <p class="lede">Amanda. Black-and-grey realism. Sleeves, cover-ups, beasts, the work that takes a sit. Want one? Book with Amanda.</p>
+    </div>
+  </header>
+
+  <div class="book-dock">
+    <div>
+      <b>Book with Amanda</b>
+      <span>Name. What you want. That is the first conversation.</span>
+    </div>
+    <a class="big-book" href="#book">Book with Amanda</a>
+  </div>
+
+  <div class="marquee" aria-hidden="true">
+    <p>Lining · Packing · Whip shade · Sit for it · Books open · Cover-ups · Sleeves · Healed work · No flash filler · Lining · Packing · Whip shade · Sit for it · Books open · Cover-ups · Sleeves · Healed work · No flash filler · </p>
+  </div>
+
+  <main>
+    <section aria-labelledby="work-title">
+      <div class="center">
+        <h2 id="work-title">The work</h2>
+        <p class="kicker">Black and grey. Healed work only.</p>
+      </div>
+      <div class="mosaic">
+        <div class="panel tall"><img class="p-kraken" src="assets/tattoo-01.jpg" alt="Kraken pulling a ship under in black and grey" width="720" height="1280" loading="lazy" /></div>
+        <div class="panel"><img class="p-cross" src="assets/tattoo-05.jpg" alt="Winged crucifixion tattoo" width="720" height="1280" loading="lazy" /></div>
+        <div class="panel"><img class="p-poseidon" src="assets/tattoo-09.jpg" alt="Poseidon with lightning and a ship" width="1320" height="2348" loading="lazy" /></div>
+        <div class="panel"><img class="p-wolf" src="assets/tattoo-14.jpg" alt="Snarling wolf tattoo" width="720" height="1280" loading="lazy" /></div>
+        <div class="panel"><img class="p-reaper" src="assets/tattoo-13.jpg" alt="Reaper tattoo" width="1320" height="2347" loading="lazy" /></div>
+        <div class="panel"><img class="p-jaguar" src="assets/tattoo-02.jpg" alt="Jaguar tattoo" width="720" height="1280" loading="lazy" /></div>
+        <div class="panel"><img class="p-time" src="assets/tattoo-15.jpg" alt="Father Time with an astrolabe" width="720" height="1280" loading="lazy" /></div>
+        <div class="panel"><img class="p-rhino" src="assets/tattoo-12.jpg" alt="Rhino chest tattoo" width="720" height="1280" loading="lazy" /></div>
+        <div class="panel"><img class="p-sleeve" src="assets/tattoo-08.jpg" alt="Story sleeve with a teddy bear, baseball, and childhood scenes" width="720" height="1280" loading="lazy" /></div>
+        <div class="panel"><img class="p-back" src="assets/tattoo-04.jpg" alt="Large back piece tattoo" width="720" height="1280" loading="lazy" /></div>
+        <div class="panel"><img class="p-shady" src="assets/tattoo-03.jpg" alt="Color portrait tattoo" width="720" height="1280" loading="lazy" /></div>
+      </div>
+    </section>
+
+    <div class="shout">
+      <p class="ink" data-ink="Sit still. Bleed pretty."></p>
+      <span class="cite">Shop floor</span>
+    </div>
+
+    <section class="hide" id="skin" aria-labelledby="needle-title">
+      <h2 id="needle-title">Try the needle</h2>
+      <p class="kicker">Press Ink. Draw on the hide. Press again to stop. The line sits, then fades.</p>
+      <div class="skin-tools">
+        <button type="button" id="ink-toggle" aria-pressed="false">Ink</button>
+        <button type="button" id="ink-clear">Wipe</button>
+      </div>
+      <div class="pigskin" id="pigskin">
+        <canvas id="ink-skin" aria-hidden="true"></canvas>
+      </div>
+      <p class="pig-note">Practice skin</p>
+    </section>
+
+    <div class="shout">
+      <p class="ink" data-ink="Lining. Packing. Whip shade."></p>
+      <span class="cite">The work</span>
+    </div>
+
+    <section id="book" aria-labelledby="book-title">
+      <div class="book-card">
+        <p class="verse ink" data-ink="Books open. Come sit."></p>
+        <span class="cite">No walk-in theater</span>
+        <h2 id="book-title">Book with Amanda.</h2>
+        <p class="kicker">Name. What you want. That is the whole thing.</p>
+        <form class="easy" id="book-form" action="mailto:elementsofink@gmail.com" method="post" enctype="text/plain">
+          <div class="field">
+            <label for="client-name">Your name</label>
+            <input id="client-name" name="name" type="text" autocomplete="name" required maxlength="80" enterkeyhint="next" />
+          </div>
+          <div class="field">
+            <label for="client-email">Email</label>
+            <input id="client-email" name="email" type="email" autocomplete="email" inputmode="email" required maxlength="120" enterkeyhint="next" />
+          </div>
+          <div class="field">
+            <label for="client-piece">What tattoo do you want?</label>
+            <textarea id="client-piece" name="piece" required maxlength="800" enterkeyhint="send"></textarea>
+          </div>
+          <button type="submit">Book with Amanda</button>
+          <p class="hint">Questions? <a href="mailto:elementsofink@gmail.com">elementsofink@gmail.com</a> · Instagram <a href="https://www.instagram.com/SUMDIRTYGINGE/" rel="noreferrer">@SUMDIRTYGINGE</a></p>
+        </form>
+        <div class="done" id="book-done" role="status" aria-live="polite">
+          <h3>Got it.</h3>
+          <p class="kicker">She will take it from there.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>Element of Ink</span>
+    <a href="https://www.instagram.com/SUMDIRTYGINGE/" rel="noreferrer">@SUMDIRTYGINGE</a>
+    <a href="mailto:elementsofink@gmail.com">elementsofink@gmail.com</a>
+  </footer>
+  <script>
+    document.querySelectorAll("[data-ink]").forEach(function (el) {
+      var text = el.getAttribute("data-ink") || "";
+      el.textContent = "";
+      Array.prototype.forEach.call(text, function (ch, i) {
+        var s = document.createElement("i");
+        s.textContent = ch;
+        s.style.setProperty("--i", i);
+        el.appendChild(s);
+      });
+    });
+
+    var verses = document.querySelectorAll(".ink");
+    var fill = document.getElementById("ink-fill");
+    var needle = document.getElementById("ink-needle");
+    function paint() {
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      var p = max > 0 ? window.scrollY / max : 0;
+      fill.style.height = (p * 100) + "%";
+      needle.style.top = (p * 100) + "%";
+      verses.forEach(function (el) {
+        var r = el.getBoundingClientRect();
+        if (r.top < window.innerHeight * 0.86) el.classList.add("inked");
+      });
+    }
+    paint();
+    window.addEventListener("scroll", paint, { passive: true });
+
+    var skin = document.getElementById("ink-skin");
+    var hide = document.getElementById("pigskin");
+    var toggle = document.getElementById("ink-toggle");
+    var wipe = document.getElementById("ink-clear");
+    if (skin && hide && toggle) {
+      var ctx = skin.getContext("2d");
+      var last = null;
+      var marks = [];
+      var HOLD = 5000;
+      var FADE = 1800;
+      var inking = false;
+      function size() {
+        skin.width = hide.clientWidth;
+        skin.height = hide.clientHeight;
+      }
+      function localPoint(e) {
+        var r = hide.getBoundingClientRect();
+        var x = (e.clientX !== undefined ? e.clientX : e.touches[0].clientX) - r.left;
+        var y = (e.clientY !== undefined ? e.clientY : e.touches[0].clientY) - r.top;
+        return { x: x, y: y };
+      }
+      function setInk(on) {
+        inking = on;
+        last = null;
+        hide.classList.toggle("is-inking", on);
+        toggle.setAttribute("aria-pressed", on ? "true" : "false");
+        toggle.textContent = on ? "Stop" : "Ink";
+      }
+      function draw() {
+        var now = performance.now();
+        ctx.clearRect(0, 0, skin.width, skin.height);
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        var keep = [];
+        for (var i = 0; i < marks.length; i++) {
+          var m = marks[i];
+          var age = now - m.t;
+          if (age >= HOLD + FADE) continue;
+          var a = 1;
+          if (age > HOLD) a = 1 - (age - HOLD) / FADE;
+          ctx.globalAlpha = a;
+          ctx.strokeStyle = "rgba(18, 10, 8, 0.62)";
+          ctx.lineWidth = 2.6;
+          ctx.beginPath();
+          ctx.moveTo(m.x1, m.y1);
+          ctx.lineTo(m.x2, m.y2);
+          ctx.stroke();
+          keep.push(m);
+        }
+        marks = keep;
+        ctx.globalAlpha = 1;
+        requestAnimationFrame(draw);
+      }
+      function strokeTo(e) {
+        if (!inking) return;
+        var p = localPoint(e);
+        if (!last) { last = p; return; }
+        marks.push({ x1: last.x, y1: last.y, x2: p.x, y2: p.y, t: performance.now() });
+        last = p;
+      }
+      size();
+      requestAnimationFrame(draw);
+      window.addEventListener("resize", size);
+      toggle.addEventListener("click", function () { setInk(!inking); });
+      if (wipe) wipe.addEventListener("click", function () { marks = []; last = null; });
+      hide.addEventListener("contextmenu", function (e) {
+        e.preventDefault();
+        setInk(!inking);
+      });
+      hide.addEventListener("pointerdown", function (e) {
+        if (!inking) return;
+        hide.setPointerCapture(e.pointerId);
+        last = localPoint(e);
+      });
+      hide.addEventListener("pointermove", function (e) {
+        if (!inking) return;
+        strokeTo(e);
+      });
+      hide.addEventListener("pointerup", function () { last = null; });
+      hide.addEventListener("pointerleave", function () { last = null; });
+    }
+
+    document.getElementById("book-form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      var name = document.getElementById("client-name").value.trim();
+      var email = document.getElementById("client-email").value.trim();
+      var piece = document.getElementById("client-piece").value.trim();
+      var body = "Name: " + name + "\nEmail: " + email + "\n\nPiece:\n" + piece;
+      var href = "mailto:elementsofink@gmail.com?subject=" +
+        encodeURIComponent("Book with Amanda") + "&body=" + encodeURIComponent(body);
+      window.location.href = href;
+      this.style.display = "none";
+      document.getElementById("book-done").style.display = "block";
+    });
+  </script>
+  <script src="js/live.js"></script>
+  <script src="js/sound.js"></script>
+</body>
+</html>
