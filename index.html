@@ -110,6 +110,13 @@
       border-bottom: 1px solid var(--line);
     }
     .brand { font-family: Needlehide, serif; font-size: clamp(22px, 3vw, 28px); line-height: 1; }
+    .nav-links {
+      display: flex; align-items: center; gap: 22px;
+      margin-left: auto; margin-right: 18px;
+      letter-spacing: .16em; text-transform: uppercase; font-size: 11px;
+      color: var(--dust);
+    }
+    .nav-links a:hover { color: var(--gold); }
     .nav-cta {
       background: var(--blood); color: #fff;
       font-weight: 700; letter-spacing: .16em; text-transform: uppercase;
@@ -136,22 +143,44 @@
     .hero {
       position: relative;
       display: grid;
-      grid-template-columns: minmax(240px, 1fr) minmax(200px, min(46vw, 720px));
-      grid-template-areas: "copy photo";
+      grid-template-columns: minmax(260px, 0.85fr) minmax(280px, 1.15fr);
+      grid-template-areas: "copy photos";
       align-items: center;
-      gap: 28px 40px;
+      gap: 28px 28px;
       min-height: calc(100svh - var(--nav-h) - 48px);
-      padding: 28px 48px 40px;
+      padding: 24px 36px 32px;
+    }
+    .hero-photos {
+      grid-area: photos;
+      display: grid;
+      grid-template-columns: 1.35fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 10px;
+      width: 100%;
+      max-width: 720px;
+      height: min(82svh, 880px);
+      justify-self: end;
     }
     .hero-photo {
-      grid-area: photo;
       position: relative;
-      width: min(100%, 720px, calc(82svh * 720 / 1280));
-      aspect-ratio: 720 / 1280;
-      justify-self: end;
+      overflow: hidden;
       background: #1a0c11;
+      min-height: 0;
     }
+    .hero-photos .lead { grid-row: 1 / -1; }
     .hero-photo img { object-fit: cover; object-position: 50% 46%; }
+    .sit-for {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      margin-top: 22px;
+    }
+    .sit-for a {
+      border: 1px solid var(--line);
+      color: var(--bone);
+      letter-spacing: .14em; text-transform: uppercase;
+      font-size: 11px; padding: 10px 14px;
+    }
+    .sit-for a:hover { border-color: var(--gold); color: var(--gold); }
+    .sit-for a.is-book { background: var(--blood); border-color: var(--blood); color: #fff; }
     .hero-live {
       position: absolute; inset: 0;
       width: 100%; height: 100%;
@@ -327,9 +356,8 @@
     }
     .mosaic {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 320px));
-      justify-content: center;
-      gap: 14px;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 10px;
     }
     .mosaic .panel {
       overflow: hidden;
@@ -487,21 +515,31 @@
     @media (max-width: 900px) {
       .hero {
         grid-template-columns: 1fr;
-        grid-template-areas: "photo" "copy";
-        padding: 20px 20px 28px;
+        grid-template-areas: "photos" "copy";
+        padding: 16px 16px 24px;
         min-height: 0;
       }
       .hero-copy { padding: 8px 2px 0; max-width: none; }
-      .hero-photo {
+      .hero-photos {
         justify-self: center;
-        width: min(100%, 720px, calc(68svh * 720 / 1280));
+        width: 100%;
+        max-width: 520px;
+        height: auto;
+        grid-template-columns: 1fr 1fr;
       }
+      .hero-photos .lead {
+        grid-column: 1 / -1;
+        aspect-ratio: 720 / 1280;
+        max-height: 52svh;
+      }
+      .hero-photos .side { aspect-ratio: 720 / 1280; }
+      .nav-links { display: none; }
       .hero-photo::after {
         background:
           linear-gradient(180deg, rgba(16,8,11,.12) 40%, rgba(16,8,11,.55) 100%);
       }
       .mosaic {
-        grid-template-columns: repeat(auto-fit, minmax(160px, 280px));
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
       }
       .mosaic .tall { grid-row: auto; }
       main section { padding: 64px 20px; }
@@ -516,7 +554,7 @@
       .yt-wrap { left: 14px; bottom: 118px; width: 144px; height: 81px; }
     }
     @media (max-width: 560px) {
-      .mosaic { grid-template-columns: minmax(180px, 320px); }
+      .mosaic { grid-template-columns: 1fr 1fr; }
       nav { padding: 10px 14px; }
       .brand { max-width: 14ch; }
     }
@@ -574,19 +612,35 @@
   <div class="ink-rail" aria-hidden="true"><b id="ink-fill"></b><i id="ink-needle"></i></div>
   <nav>
     <div class="brand">Element of Ink</div>
+    <div class="nav-links">
+      <a href="#work">Work</a>
+      <a href="#skin">Hide</a>
+      <a href="https://www.instagram.com/SUMDIRTYGINGE/" rel="noreferrer">Instagram</a>
+    </div>
     <a class="nav-cta" href="#book">Book with Amanda</a>
   </nav>
 
   <header class="hero">
-    <div class="hero-photo" id="hero-photo">
-      <img src="assets/tattoo-16.jpg" alt="Black-and-grey chest piece" width="720" height="1280" fetchpriority="high" class="p-hero" id="hero-img" />
-      <canvas class="hero-live" id="hero-live" aria-hidden="true"></canvas>
+    <div class="hero-photos">
+      <div class="hero-photo lead" id="hero-photo">
+        <img src="assets/tattoo-16.jpg" alt="Black-and-grey chest piece" width="720" height="1280" fetchpriority="high" class="p-hero" id="hero-img" />
+        <canvas class="hero-live" id="hero-live" aria-hidden="true"></canvas>
+      </div>
+      <a class="hero-photo side" href="#work"><img class="p-kraken" src="assets/tattoo-01.jpg" alt="Kraken pulling a ship under" width="720" height="1280" /></a>
+      <a class="hero-photo side" href="#work"><img class="p-poseidon" src="assets/tattoo-09.jpg" alt="Poseidon with lightning and a ship" width="1320" height="2348" /></a>
     </div>
     <div class="hero-copy">
       <p class="verse">Sit still. Bleed pretty.</p>
       <span class="cite">Shop floor</span>
       <h1>Element of Ink</h1>
       <p class="lede">Amanda. Black-and-grey realism. Sleeves, cover-ups, beasts, the work that takes a sit. Want one? Book with Amanda.</p>
+      <div class="sit-for">
+        <a href="#work">Sleeves</a>
+        <a href="#work">Cover-ups</a>
+        <a href="#work">Black and grey</a>
+        <a href="https://www.instagram.com/SUMDIRTYGINGE/" rel="noreferrer">Instagram</a>
+        <a class="is-book" href="#book">Book a sit</a>
+      </div>
     </div>
   </header>
 
@@ -603,12 +657,13 @@
   </div>
 
   <main>
-    <section aria-labelledby="work-title">
+    <section id="work" aria-labelledby="work-title">
       <div class="center">
         <h2 id="work-title">The work</h2>
         <p class="kicker">Black and grey. Healed work only.</p>
       </div>
       <div class="mosaic">
+        <div class="panel tall"><img class="p-hero" src="assets/tattoo-16.jpg" alt="Black-and-grey chest piece" width="720" height="1280" loading="lazy" /></div>
         <div class="panel tall"><img class="p-kraken" src="assets/tattoo-01.jpg" alt="Kraken pulling a ship under in black and grey" width="720" height="1280" loading="lazy" /></div>
         <div class="panel"><img class="p-cross" src="assets/tattoo-05.jpg" alt="Winged crucifixion tattoo" width="720" height="1280" loading="lazy" /></div>
         <div class="panel"><img class="p-poseidon" src="assets/tattoo-09.jpg" alt="Poseidon with lightning and a ship" width="1320" height="2348" loading="lazy" /></div>
