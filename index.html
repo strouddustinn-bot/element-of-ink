@@ -148,13 +148,14 @@
     .hero-live {
       position: absolute; inset: 0;
       width: 100%; height: 100%;
-      z-index: 1;
+      z-index: 2;
       pointer-events: none;
       opacity: 0;
-      transition: opacity .7s ease;
+      transition: opacity .35s ease;
     }
     .hero-photo.is-live .hero-live { opacity: 1; }
     .hero-photo.is-live img { opacity: 0; }
+    .hero-photo::after { z-index: 1; pointer-events: none; }
     .mosaic .panel { position: relative; }
     .ink-live {
       position: absolute; inset: 0;
