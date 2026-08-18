@@ -142,33 +142,42 @@
 
     .hero {
       position: relative;
-      display: grid;
-      grid-template-columns: minmax(260px, 0.85fr) minmax(280px, 1.15fr);
-      grid-template-areas: "copy photos";
-      align-items: center;
-      gap: 28px 28px;
-      min-height: calc(100svh - var(--nav-h) - 48px);
-      padding: 24px 36px 32px;
-    }
-    .hero-photos {
-      grid-area: photos;
-      display: grid;
-      grid-template-columns: 1.35fr 1fr;
-      grid-template-rows: 1fr 1fr;
-      gap: 10px;
-      width: 100%;
-      max-width: 720px;
-      height: min(82svh, 880px);
-      justify-self: end;
-    }
-    .hero-photo {
-      position: relative;
+      min-height: calc(100svh - var(--nav-h) - 36px);
+      display: block;
       overflow: hidden;
-      background: #1a0c11;
-      min-height: 0;
     }
-    .hero-photos .lead { grid-row: 1 / -1; }
-    .hero-photo img { object-fit: cover; object-position: 50% 46%; }
+    .hero-videos {
+      position: absolute; inset: 0;
+      display: grid;
+      grid-template-columns: 1.25fr 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 3px;
+      background: #0e0709;
+    }
+    .hero-videos .v-lead { grid-row: 1 / -1; }
+    .hero-videos video,
+    .hero-videos img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+      background: #160b10;
+    }
+    .hero-copy {
+      position: relative;
+      z-index: 3;
+      min-height: calc(100svh - var(--nav-h) - 36px);
+      max-width: 36rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 40px 40px 72px;
+      background: linear-gradient(90deg, rgba(16,8,11,.92) 0%, rgba(16,8,11,.62) 62%, transparent 100%);
+    }
+    .hero-videos img { display: none; }
+    @media (prefers-reduced-motion: reduce) {
+      .hero-videos video { display: none; }
+      .hero-videos img { display: block; }
+    }
     .sit-for {
       display: flex; flex-wrap: wrap; gap: 8px;
       margin-top: 22px;
@@ -191,27 +200,6 @@
     }
     .hero-photo.is-live .hero-live { opacity: 1; }
     .hero-photo.is-live img { opacity: 0; }
-    .hero-photo::after { z-index: 1; pointer-events: none; }
-    .mosaic .panel { position: relative; }
-    .ink-live {
-      position: absolute; inset: 0;
-      width: 100%; height: 100%;
-      pointer-events: none;
-      opacity: 0;
-    }
-    .mosaic .panel.is-live img { opacity: 0; }
-    .mosaic .panel.is-live .ink-live { opacity: 1; }
-    .hero-photo::after {
-      content: ""; position: absolute; inset: 0;
-      background: linear-gradient(180deg, transparent 72%, rgba(16,8,11,.4) 100%);
-    }
-    .hero-copy {
-      grid-area: copy;
-      position: relative;
-      z-index: 2;
-      padding: 0;
-      max-width: 38rem;
-    }
     .verse {
       font-family: "Cormorant Garamond", Georgia, serif;
       font-style: italic; color: var(--gold); font-size: clamp(18px, 2.2vw, 22px); max-width: 28ch;
@@ -272,7 +260,7 @@
     .sound-toggle {
       position: fixed;
       left: 16px;
-      bottom: 196px;
+      bottom: 88px;
       z-index: 35;
       border: 1px solid var(--line);
       background: rgba(22,11,16,.78);
@@ -285,14 +273,6 @@
       backdrop-filter: blur(8px);
     }
     .sound-toggle[aria-pressed="false"] { color: var(--dust); }
-    .yt-wrap {
-      position: fixed;
-      left: 16px;
-      bottom: 88px;
-      z-index: 34;
-      width: 160px;
-      height: 90px;
-    }
     .yt-floor {
       width: 100%;
       height: 100%;
@@ -513,31 +493,16 @@
     }
 
     @media (max-width: 900px) {
-      .hero {
-        grid-template-columns: 1fr;
-        grid-template-areas: "photos" "copy";
-        padding: 16px 16px 24px;
-        min-height: 0;
+      .hero { min-height: 78svh; }
+      .hero-videos { grid-template-columns: 1fr 1fr; }
+      .hero-videos .v-lead { grid-row: 1; grid-column: 1 / -1; }
+      .hero-copy {
+        min-height: 78svh;
+        max-width: none;
+        padding: 24px 20px 56px;
+        background: linear-gradient(180deg, transparent 20%, rgba(16,8,11,.88) 72%);
       }
-      .hero-copy { padding: 8px 2px 0; max-width: none; }
-      .hero-photos {
-        justify-self: center;
-        width: 100%;
-        max-width: 520px;
-        height: auto;
-        grid-template-columns: 1fr 1fr;
-      }
-      .hero-photos .lead {
-        grid-column: 1 / -1;
-        aspect-ratio: 720 / 1280;
-        max-height: 52svh;
-      }
-      .hero-photos .side { aspect-ratio: 720 / 1280; }
       .nav-links { display: none; }
-      .hero-photo::after {
-        background:
-          linear-gradient(180deg, rgba(16,8,11,.12) 40%, rgba(16,8,11,.55) 100%);
-      }
       .mosaic {
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
       }
@@ -550,8 +515,7 @@
       .big-book { padding: 14px 16px; font-size: 13px; }
       .hide { display: none; }
       footer { padding: 24px 20px 96px; }
-      .sound-toggle { bottom: 228px; left: 14px; }
-      .yt-wrap { left: 14px; bottom: 118px; width: 144px; height: 81px; }
+      .sound-toggle { bottom: 88px; left: 14px; }
     }
     @media (max-width: 560px) {
       .mosaic { grid-template-columns: 1fr 1fr; }
@@ -592,20 +556,7 @@
 </head>
 <body>
   <div class="lightning" id="lightning" aria-hidden="true"></div>
-  <div class="yt-wrap" id="yt-wrap">
-    <button type="button" class="yt-close" id="yt-close" aria-label="Close">×</button>
-    <div class="yt-floor" id="yt-floor-box">
-      <iframe
-        id="yt-floor"
-        title="I'm Back — Eminem"
-        src=""
-        allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
-        allowfullscreen
-      ></iframe>
-    </div>
-    <a class="yt-open" id="yt-open" href="https://www.youtube.com/watch?v=UimodeZfA9o" target="_blank" rel="noopener">I'm Back</a>
-  </div>
-  <button type="button" class="sound-toggle" id="sound-toggle" aria-pressed="true">Sound on</button>
+  <button type="button" class="sound-toggle" id="sound-toggle" aria-pressed="false">Sound off</button>
   <div class="orb" id="orb" aria-hidden="true"></div>
   <a class="skip" href="#book">Skip to booking</a>
   <div class="open-bar">Element of Ink · Books open</div>
@@ -621,13 +572,15 @@
   </nav>
 
   <header class="hero">
-    <div class="hero-photos">
-      <div class="hero-photo lead" id="hero-photo">
-        <img src="assets/tattoo-16.jpg" alt="Black-and-grey chest piece" width="720" height="1280" fetchpriority="high" class="p-hero" id="hero-img" />
-        <canvas class="hero-live" id="hero-live" aria-hidden="true"></canvas>
-      </div>
-      <a class="hero-photo side" href="#work"><img class="p-kraken" src="assets/tattoo-01.jpg" alt="Kraken pulling a ship under" width="720" height="1280" /></a>
-      <a class="hero-photo side" href="#work"><img class="p-poseidon" src="assets/tattoo-09.jpg" alt="Poseidon with lightning and a ship" width="1320" height="2348" /></a>
+    <div class="hero-videos" id="hero-videos">
+      <video class="v-lead" data-lead="1" src="assets/videos/reaper.mp4" poster="assets/videos/reaper.jpg" muted loop playsinline autoplay preload="metadata"></video>
+      <img class="v-lead" src="assets/videos/reaper.jpg" alt="" />
+      <video src="assets/videos/norse.mp4" poster="assets/videos/norse.jpg" muted loop playsinline autoplay preload="metadata"></video>
+      <img src="assets/videos/norse.jpg" alt="" />
+      <video src="assets/videos/stencil.mp4" poster="assets/videos/stencil.jpg" muted loop playsinline autoplay preload="metadata"></video>
+      <img src="assets/videos/stencil.jpg" alt="" />
+      <video src="assets/videos/warrior.mp4" poster="assets/videos/warrior.jpg" muted loop playsinline autoplay preload="metadata"></video>
+      <img src="assets/videos/warrior.jpg" alt="" />
     </div>
     <div class="hero-copy">
       <p class="verse">Sit still. Bleed pretty.</p>
@@ -860,6 +813,23 @@
     });
   </script>
   <script src="js/live.js"></script>
-  <script src="js/sound.js"></script>
+  <script>
+    (function () {
+      var btn = document.getElementById("sound-toggle");
+      var vids = Array.prototype.slice.call(document.querySelectorAll("#hero-videos video"));
+      if (!btn || !vids.length) return;
+      vids.forEach(function (v) { v.play().catch(function () {}); });
+      btn.addEventListener("click", function () {
+        var on = btn.getAttribute("aria-pressed") !== "true";
+        vids.forEach(function (v) {
+          if (v.getAttribute("data-lead")) v.muted = !on;
+          else v.muted = true;
+          v.play().catch(function () {});
+        });
+        btn.setAttribute("aria-pressed", on ? "true" : "false");
+        btn.textContent = on ? "Sound on" : "Sound off";
+      });
+    })();
+  </script>
 </body>
 </html>
