@@ -7,6 +7,11 @@
     return Math.max(lo, Math.min(hi, v));
   }
 
+  function deterministicSeed(a, b) {
+    var n = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453;
+    return n - Math.floor(n);
+  }
+
   function magnetize(el) {
     if (!el || !fine || reduce) return;
     el.addEventListener("pointermove", function (e) {
@@ -24,31 +29,72 @@
   magnetize(document.querySelector(".big-book"));
   magnetize(document.querySelector(".easy button"));
 
-  var orb = document.getElementById("orb");
-  if (orb && fine && !reduce) {
+  function installTattooCursor() {
+    var oldOrb = document.getElementById("orb");
+    if (oldOrb) oldOrb.style.display = "none";
+    if (!fine || reduce) return;
+
     document.documentElement.classList.add("has-orb");
-    var ox = -80, oy = -80;
+
+    var style = document.createElement("style");
+    style.textContent =
+      "#tattoo-machine-cursor{" +
+      "position:fixed;left:0;top:0;width:58px;height:58px;z-index:140;" +
+      "pointer-events:none;opacity:0;transform:translate3d(-100px,-100px,0);" +
+      "transition:opacity .16s ease,filter .16s ease;" +
+      "filter:drop-shadow(0 3px 4px rgba(0,0,0,.58));will-change:transform}" +
+      "#tattoo-machine-cursor svg{display:block;width:100%;height:100%;overflow:visible}" +
+      "#tattoo-machine-cursor.is-hot{filter:drop-shadow(0 3px 5px rgba(0,0,0,.65)) drop-shadow(0 0 5px rgba(224,180,90,.28))}" +
+      "#tattoo-machine-cursor.is-ink .needle{animation:eoi-needle .11s linear infinite alternate}" +
+      "@keyframes eoi-needle{from{transform:translate(0,0)}to{transform:translate(-.7px,1.2px)}}" +
+      ".mosaic .panel img{opacity:1!important}" +
+      ".mosaic .panel .ink-live{opacity:1!important}" +
+      "#orb{display:none!important}";
+    document.head.appendChild(style);
+
+    var cursor = document.createElement("div");
+    cursor.id = "tattoo-machine-cursor";
+    cursor.setAttribute("aria-hidden", "true");
+    cursor.innerHTML =
+      '<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">' +
+      '<g transform="rotate(-8 30 31)">' +
+      '<path d="M22 39 L13 54" fill="none" stroke="#d7d7d2" stroke-width="4.8" stroke-linecap="round"/>' +
+      '<path d="M13 54 L8 62" class="needle" fill="none" stroke="#f3e6d2" stroke-width="1.35" stroke-linecap="round"/>' +
+      '<path d="M21 39 L30 41 L34 34 L25 31 Z" fill="#2a1218" stroke="#e0b45a" stroke-width="1.7" stroke-linejoin="round"/>' +
+      '<path d="M25 31 L24 16 L32 9 L46 12 L50 22 L42 28 L34 27" fill="none" stroke="#e0b45a" stroke-width="3.1" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<rect x="31" y="15" width="9" height="12" rx="2.2" fill="#160b10" stroke="#c4a48a" stroke-width="1.4"/>' +
+      '<rect x="42" y="17" width="8" height="11" rx="2.2" fill="#160b10" stroke="#c4a48a" stroke-width="1.4"/>' +
+      '<path d="M28 12 L49 15" stroke="#f3e6d2" stroke-width="2.1" stroke-linecap="round"/>' +
+      '<circle cx="27" cy="12" r="3.2" fill="#8b1e2d" stroke="#e0b45a" stroke-width="1.4"/>' +
+      '<path d="M30 39 L38 45" stroke="#8b1e2d" stroke-width="3.2" stroke-linecap="round"/>' +
+      '<path d="M38 45 C47 48 49 54 55 56" fill="none" stroke="#8b1e2d" stroke-width="2.3" stroke-linecap="round"/>' +
+      '</g></svg>';
+    document.body.appendChild(cursor);
+
+    var x = -100, y = -100;
     window.addEventListener("pointermove", function (e) {
-      ox = e.clientX;
-      oy = e.clientY;
+      x = e.clientX;
+      y = e.clientY;
+      cursor.style.opacity = "1";
       var hot = e.target.closest("a, button, .panel, .pigskin, input, textarea, label");
-      orb.classList.toggle("is-hot", !!hot && !e.target.closest(".pigskin"));
-      orb.classList.toggle("is-ink", !!e.target.closest(".pigskin"));
+      cursor.classList.toggle("is-hot", !!hot);
+      cursor.classList.toggle("is-ink", !!e.target.closest(".panel, .pigskin"));
     }, { passive: true });
+
+    document.documentElement.addEventListener("mouseleave", function () {
+      cursor.style.opacity = "0";
+    });
+
     (function follow() {
-      orb.style.transform = "translate3d(" + ox + "px," + oy + "px,0)";
+      cursor.style.transform =
+        "translate3d(" + (x - 8) + "px," + (y - 62) + "px,0)";
       requestAnimationFrame(follow);
     })();
   }
 
-  if (reduce || !fine) return;
+  installTattooCursor();
 
-  // Safety override for any stale CSS from earlier particle prototypes.
-  var safety = document.createElement("style");
-  safety.textContent =
-    ".mosaic .panel img{opacity:1!important}" +
-    ".mosaic .panel .ink-live{opacity:1!important}";
-  document.head.appendChild(safety);
+  if (reduce || !fine) return;
 
   function coverUV(iw, ih, vw, vh, ox, oy) {
     var ir = iw / ih;
@@ -103,11 +149,6 @@
     return (data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114) / 255;
   }
 
-  function deterministicSeed(a, b) {
-    var n = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453;
-    return n - Math.floor(n);
-  }
-
   function buildLocalAverage(src) {
     var w = src.width;
     var h = src.height;
@@ -145,7 +186,11 @@
         var rgb = Math.max(md[mi], md[mi + 1], md[mi + 2]);
         confidence[mp] = Math.round(rgb * (md[mi + 3] / 255));
       }
-      return { confidence: confidence, explicit: true, average: buildLocalAverage(work) };
+      return {
+        confidence: confidence,
+        explicit: true,
+        average: buildLocalAverage(work)
+      };
     }
 
     var avg = buildLocalAverage(work);
@@ -161,15 +206,156 @@
       var darkness = clamp((0.60 - lum) / 0.42, 0, 1);
       var usableBase = clamp((baseLum - 0.19) / 0.40, 0, 1);
       var score = contrast * 5.2 + darkness * 0.22 * usableBase;
-
       if (baseLum < 0.17 || lum > 0.62) score = 0;
-
-      confidence[p] = Math.round(
-        clamp((score - 0.13) / 0.49, 0, 1) * 255
-      );
+      confidence[p] = Math.round(clamp((score - 0.13) / 0.49, 0, 1) * 255);
     }
 
-    return { confidence: confidence, explicit: false, average: avg };
+    return {
+      confidence: confidence,
+      explicit: false,
+      average: avg
+    };
+  }
+
+  function buildSkinPlate(work, maskResult) {
+    var w = work.width;
+    var h = work.height;
+    var srcCtx = work.getContext("2d", { willReadFrequently: true });
+    var srcImg = srcCtx.getImageData(0, 0, w, h);
+    var src = srcImg.data;
+    var conf = maskResult.confidence;
+    var out = new Uint8ClampedArray(src);
+    var filled = new Uint8Array(w * h);
+    var originalMask = new Uint8Array(w * h);
+    var queue = new Int32Array(w * h);
+    var head = 0;
+    var tail = 0;
+    var dirs = [
+      [-1, -1], [0, -1], [1, -1],
+      [-1, 0],           [1, 0],
+      [-1, 1],  [0, 1],  [1, 1]
+    ];
+
+    for (var i = 0; i < conf.length; i++) {
+      if (conf[i] >= 76) originalMask[i] = 1;
+      else filled[i] = 1;
+    }
+
+    for (var y = 0; y < h; y++) {
+      for (var x = 0; x < w; x++) {
+        var pi = y * w + x;
+        if (!originalMask[pi]) continue;
+
+        var sr = 0, sg = 0, sb = 0, n = 0;
+        for (var d = 0; d < dirs.length; d++) {
+          var nx = x + dirs[d][0];
+          var ny = y + dirs[d][1];
+          if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+          var ni = ny * w + nx;
+          if (originalMask[ni]) continue;
+          var oi = ni * 4;
+          sr += src[oi];
+          sg += src[oi + 1];
+          sb += src[oi + 2];
+          n++;
+        }
+
+        if (n) {
+          var o = pi * 4;
+          out[o] = Math.round(sr / n);
+          out[o + 1] = Math.round(sg / n);
+          out[o + 2] = Math.round(sb / n);
+          out[o + 3] = 255;
+          filled[pi] = 1;
+          queue[tail++] = pi;
+        }
+      }
+    }
+
+    while (head < tail) {
+      var cur = queue[head++];
+      var cx = cur % w;
+      var cy = Math.floor(cur / w);
+
+      for (d = 0; d < dirs.length; d++) {
+        nx = cx + dirs[d][0];
+        ny = cy + dirs[d][1];
+        if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+        ni = ny * w + nx;
+        if (!originalMask[ni] || filled[ni]) continue;
+
+        sr = 0; sg = 0; sb = 0; n = 0;
+        for (var nd = 0; nd < dirs.length; nd++) {
+          var ax = nx + dirs[nd][0];
+          var ay = ny + dirs[nd][1];
+          if (ax < 0 || ay < 0 || ax >= w || ay >= h) continue;
+          var ai = ay * w + ax;
+          if (!filled[ai]) continue;
+          oi = ai * 4;
+          sr += out[oi];
+          sg += out[oi + 1];
+          sb += out[oi + 2];
+          n++;
+        }
+
+        if (n) {
+          o = ni * 4;
+          out[o] = Math.round(sr / n);
+          out[o + 1] = Math.round(sg / n);
+          out[o + 2] = Math.round(sb / n);
+          out[o + 3] = 255;
+          filled[ni] = 1;
+          queue[tail++] = ni;
+        }
+      }
+    }
+
+    var avg = maskResult.average || buildLocalAverage(work);
+    var avgData = avg.getContext("2d", { willReadFrequently: true })
+      .getImageData(0, 0, w, h).data;
+    for (i = 0; i < originalMask.length; i++) {
+      if (!originalMask[i] || filled[i]) continue;
+      o = i * 4;
+      out[o] = avgData[o];
+      out[o + 1] = avgData[o + 1];
+      out[o + 2] = avgData[o + 2];
+      out[o + 3] = 255;
+      filled[i] = 1;
+    }
+
+    for (var pass = 0; pass < 2; pass++) {
+      var next = new Uint8ClampedArray(out);
+      for (y = 1; y < h - 1; y++) {
+        for (x = 1; x < w - 1; x++) {
+          pi = y * w + x;
+          if (!originalMask[pi]) continue;
+          sr = 0; sg = 0; sb = 0; n = 0;
+          for (d = 0; d < dirs.length; d++) {
+            ni = (y + dirs[d][1]) * w + (x + dirs[d][0]);
+            oi = ni * 4;
+            sr += out[oi];
+            sg += out[oi + 1];
+            sb += out[oi + 2];
+            n++;
+          }
+          o = pi * 4;
+          next[o] = Math.round((out[o] * 2 + sr / n) / 3);
+          next[o + 1] = Math.round((out[o + 1] * 2 + sg / n) / 3);
+          next[o + 2] = Math.round((out[o + 2] * 2 + sb / n) / 3);
+          next[o + 3] = 255;
+        }
+      }
+      out = next;
+    }
+
+    var plate = document.createElement("canvas");
+    plate.width = w;
+    plate.height = h;
+    var pctx = plate.getContext("2d");
+    var plateImg = pctx.createImageData(w, h);
+    plateImg.data.set(out);
+    pctx.putImageData(plateImg, 0, 0);
+    return plate;
   }
 
   function dilate(binary, w, h) {
@@ -194,8 +380,6 @@
       if (confidence[i] >= 100) base[i] = 1;
     }
 
-    // A one-pixel bridge reconnects broken outlines but generally keeps
-    // neighboring tattoo details (such as separate suction cups) distinct.
     var binary = dilate(base, w, h);
     var seen = new Uint8Array(binary.length);
     var components = [];
@@ -268,14 +452,10 @@
     var bh = component.maxY - component.minY + 1;
     var area = component.pixels.length;
 
-    // Small/medium connected features stay rigid as one visual object.
-    // This is what lets a suction cup, tooth, eye, symbol, etc. move intact.
     if (area <= 380 && bw <= 54 && bh <= 54) {
       return [component.pixels];
     }
 
-    // Large connected shading/outlines are divided into coherent local groups.
-    // The sprite shape is still masked, so these never look like square tiles.
     var cell = 28;
     var buckets = Object.create(null);
     for (var i = 0; i < component.pixels.length; i++) {
@@ -296,13 +476,12 @@
     return groups;
   }
 
-  function makeGroup(pixelIndices, work, maskResult) {
+  function makeGroup(pixelIndices, work, maskResult, skinPlate) {
     var w = work.width;
     var h = work.height;
     var srcCtx = work.getContext("2d", { willReadFrequently: true });
     var src = srcCtx.getImageData(0, 0, w, h).data;
-    var avg = maskResult.average || buildLocalAverage(work);
-    var avgData = avg.getContext("2d", { willReadFrequently: true })
+    var skinData = skinPlate.getContext("2d", { willReadFrequently: true })
       .getImageData(0, 0, w, h).data;
     var conf = maskResult.confidence;
 
@@ -353,17 +532,17 @@
 
       var srcI = pi * 4;
       var localI = ((y - minY) * sw + (x - minX)) * 4;
-      var alpha = Math.round(clamp((conf[pi] - 58) / 150, 0, 1) * 255);
+      var alpha = Math.round(clamp((conf[pi] - 52) / 145, 0, 1) * 255);
 
       sImg.data[localI] = src[srcI];
       sImg.data[localI + 1] = src[srcI + 1];
       sImg.data[localI + 2] = src[srcI + 2];
       sImg.data[localI + 3] = alpha;
 
-      bImg.data[localI] = avgData[srcI];
-      bImg.data[localI + 1] = avgData[srcI + 1];
-      bImg.data[localI + 2] = avgData[srcI + 2];
-      bImg.data[localI + 3] = Math.round(alpha * 0.92);
+      bImg.data[localI] = skinData[srcI];
+      bImg.data[localI + 1] = skinData[srcI + 1];
+      bImg.data[localI + 2] = skinData[srcI + 2];
+      bImg.data[localI + 3] = Math.round(alpha * 0.99);
     }
 
     sctx.putImageData(sImg, 0, 0);
@@ -396,7 +575,7 @@
     };
   }
 
-  function buildGroups(work, maskResult) {
+  function buildGroups(work, maskResult, skinPlate) {
     var w = work.width;
     var h = work.height;
     var components = connectedComponents(maskResult.confidence, w, h);
@@ -409,13 +588,12 @@
       }
     }
 
-    // Prefer stronger, meaningful structures and cap CPU/memory use.
     pixelGroups.sort(function (a, b) { return b.length - a.length; });
     if (pixelGroups.length > 420) pixelGroups.length = 420;
 
     var groups = [];
     for (i = 0; i < pixelGroups.length; i++) {
-      var group = makeGroup(pixelGroups[i], work, maskResult);
+      var group = makeGroup(pixelGroups[i], work, maskResult, skinPlate);
       if (group) groups.push(group);
     }
 
@@ -442,7 +620,8 @@
     paintCover(wctx, img, pos, work.width, work.height);
 
     var maskResult = buildMask(work, opts.mask || null, pos);
-    var groups = buildGroups(work, maskResult);
+    var skinPlate = buildSkinPlate(work, maskResult);
+    var groups = buildGroups(work, maskResult, skinPlate);
     if (!groups.length) return null;
 
     img.style.opacity = "1";
@@ -584,7 +763,11 @@
         g.angle += g.va * dt;
 
         var motion = Math.sqrt(g.ox * g.ox + g.oy * g.oy);
-        var active = influence > 0.01 || motion > 0.16 || Math.abs(g.z) > 0.01 || Math.abs(g.angle) > 0.002;
+        var active =
+          influence > 0.01 ||
+          motion > 0.16 ||
+          Math.abs(g.z) > 0.01 ||
+          Math.abs(g.angle) > 0.002;
 
         if (!active) {
           if (cursor.x < 0) {
@@ -598,9 +781,8 @@
         anyMoving = true;
         activeCount++;
 
-        var holeAlpha = clamp(motion / 5 + g.z * 0.72, 0, 0.96);
+        var holeAlpha = clamp(motion / 3.8 + g.z * 0.9, 0, 0.995);
 
-        // Reveal only the exact masked structure that moved away.
         ctx.save();
         ctx.globalAlpha = holeAlpha;
         ctx.translate(homeX, homeY);
@@ -608,14 +790,13 @@
         ctx.drawImage(g.base, g.relX, g.relY);
         ctx.restore();
 
-        // Draw the feature as one rigid masked sprite.
         ctx.save();
-        ctx.translate(homeX + g.ox, homeY + g.oy - g.z * 5);
+        ctx.translate(homeX + g.ox, homeY + g.oy - g.z * 6);
         ctx.rotate(g.angle);
-        var liftScale = 1 + g.z * 0.045;
+        var liftScale = 1 + g.z * 0.055;
         ctx.scale(scaleX * liftScale, scaleY * liftScale);
-        ctx.shadowColor = "rgba(10,4,7," + clamp(g.z * 0.30, 0, 0.24) + ")";
-        ctx.shadowBlur = g.z * 6;
+        ctx.shadowColor = "rgba(10,4,7," + clamp(g.z * 0.30, 0, 0.25) + ")";
+        ctx.shadowBlur = g.z * 7;
         ctx.shadowOffsetY = g.z * 3;
         ctx.drawImage(g.sprite, g.relX, g.relY);
         ctx.restore();
@@ -687,8 +868,6 @@
 
   document.querySelectorAll(".mosaic .panel").forEach(function (panel) {
     var img = panel.querySelector("img");
-
-    // Amanda's seated artist portrait is intentionally excluded.
     if (!img || img.getAttribute("data-no-ink")) return;
 
     var armed = false;
