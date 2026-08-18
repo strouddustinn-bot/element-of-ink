@@ -256,77 +256,111 @@
   }
 
   function connectedComponents(confidence, w, h) {
-    var base = new Uint8Array(confidence.length);
-
-    for (var i = 0; i < confidence.length; i++) {
-      if (confidence[i] >= 100) base[i] = 1;
-    }
-
-    var binary = dilate(base, w, h);
-    var seen = new Uint8Array(binary.length);
+    var STRONG = 88;
+    var WEAK = 46;
+    var SUBTLE_SEED = 66;
+    var SUBTLE_WEAK = 54;
+    var len = confidence.length;
+    var claimed = new Uint8Array(len);
+    var visited = new Uint8Array(len);
     var components = [];
-    var qx = new Int32Array(binary.length);
-    var qy = new Int32Array(binary.length);
+    var queue = new Int32Array(len);
     var dirs = [
       [-1, -1], [0, -1], [1, -1],
       [-1, 0],           [1, 0],
       [-1, 1],  [0, 1],  [1, 1]
     ];
 
-    for (var y = 0; y < h; y++) {
-      for (var x = 0; x < w; x++) {
-        var start = y * w + x;
-        if (!binary[start] || seen[start]) continue;
+    function flood(start, threshold, maxPixels) {
+      var head = 0;
+      var tail = 0;
+      var pixels = [];
+      var minX = w, minY = h, maxX = 0, maxY = 0;
+      var totalConfidence = 0;
 
-        var head = 0;
-        var tail = 0;
-        qx[tail] = x;
-        qy[tail] = y;
-        tail++;
-        seen[start] = 1;
+      queue[tail++] = start;
+      visited[start] = 1;
 
-        var pixels = [];
-        var minX = x, minY = y, maxX = x, maxY = y;
+      while (head < tail) {
+        var ci = queue[head++];
+        if (confidence[ci] < threshold) continue;
 
-        while (head < tail) {
-          var cx = qx[head];
-          var cy = qy[head];
-          head++;
+        var cx = ci % w;
+        var cy = Math.floor(ci / w);
 
-          var ci = cy * w + cx;
-          if (confidence[ci] >= 72) {
-            pixels.push(ci);
-            if (cx < minX) minX = cx;
-            if (cy < minY) minY = cy;
-            if (cx > maxX) maxX = cx;
-            if (cy > maxY) maxY = cy;
-          }
+        pixels.push(ci);
+        totalConfidence += confidence[ci];
+        if (cx < minX) minX = cx;
+        if (cy < minY) minY = cy;
+        if (cx > maxX) maxX = cx;
+        if (cy > maxY) maxY = cy;
 
-          for (var d = 0; d < dirs.length; d++) {
-            var nx = cx + dirs[d][0];
-            var ny = cy + dirs[d][1];
-            if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
-
-            var ni = ny * w + nx;
-            if (!binary[ni] || seen[ni]) continue;
-
-            seen[ni] = 1;
-            qx[tail] = nx;
-            qy[tail] = ny;
-            tail++;
-          }
+        if (maxPixels && pixels.length > maxPixels) {
+          return null;
         }
 
-        if (pixels.length >= 5) {
-          components.push({
-            pixels: pixels,
-            minX: minX,
-            minY: minY,
-            maxX: maxX,
-            maxY: maxY
-          });
+        for (var d = 0; d < dirs.length; d++) {
+          var nx = cx + dirs[d][0];
+          var ny = cy + dirs[d][1];
+          if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+
+          var ni = ny * w + nx;
+          if (visited[ni] || claimed[ni]) continue;
+          if (confidence[ni] < threshold) continue;
+
+          visited[ni] = 1;
+          queue[tail++] = ni;
         }
       }
+
+      if (!pixels.length) return null;
+
+      return {
+        pixels: pixels,
+        minX: minX,
+        minY: minY,
+        maxX: maxX,
+        maxY: maxY,
+        averageConfidence: totalConfidence / pixels.length
+      };
+    }
+
+    // Primary pass: confident ink starts each feature, while connected softer
+    // shading and fine linework are allowed to stay attached to that feature.
+    for (var i = 0; i < len; i++) {
+      if (claimed[i] || visited[i] || confidence[i] < STRONG) continue;
+
+      var primary = flood(i, WEAK, 0);
+      if (!primary || primary.pixels.length < 3) continue;
+
+      for (var p = 0; p < primary.pixels.length; p++) {
+        claimed[primary.pixels[p]] = 1;
+      }
+      components.push(primary);
+    }
+
+    // Secondary pass: rescue small isolated grey details that never contain a
+    // very dark seed. Size and average-confidence limits keep shadows/background
+    // from becoming large moving regions.
+    visited.fill(0);
+
+    for (i = 0; i < len; i++) {
+      if (claimed[i] || visited[i] || confidence[i] < SUBTLE_SEED) continue;
+
+      var subtle = flood(i, SUBTLE_WEAK, 150);
+      if (!subtle) continue;
+
+      var bw = subtle.maxX - subtle.minX + 1;
+      var bh = subtle.maxY - subtle.minY + 1;
+      var compact = bw <= 42 && bh <= 42;
+      var credible = subtle.averageConfidence >= 64;
+
+      if (subtle.pixels.length < 3 || !compact || !credible) continue;
+
+      for (p = 0; p < subtle.pixels.length; p++) {
+        claimed[subtle.pixels[p]] = 1;
+      }
+      components.push(subtle);
     }
 
     return components;
@@ -359,7 +393,7 @@
     var groups = [];
 
     Object.keys(buckets).forEach(function (key) {
-      if (buckets[key].length >= 5) groups.push(buckets[key]);
+      if (buckets[key].length >= 3) groups.push(buckets[key]);
     });
 
     return groups;
@@ -554,7 +588,7 @@
       var li = (y - minY) * sw + (x - minX);
       var localI = li * 4;
       var spriteAlpha = Math.round(
-        clamp((conf[pi] - 50) / 142, 0, 1) * 255
+        clamp((conf[pi] - 42) / 150, 0, 1) * 255
       );
 
       exact[li] = 1;
@@ -634,8 +668,8 @@
       return b.length - a.length;
     });
 
-    if (pixelGroups.length > 420) {
-      pixelGroups.length = 420;
+    if (pixelGroups.length > 520) {
+      pixelGroups.length = 520;
     }
 
     var sourceData = work
@@ -894,7 +928,7 @@
           groups.length + " rigid groups · " +
           activeCount + " active · " +
           fps + " fps · " +
-          (maskResult.explicit ? "explicit mask" : "auto segmentation");
+          (maskResult.explicit ? "explicit mask" : "auto segmentation refined");
       }
 
       if (cursor.x >= 0 || anyMoving) {
