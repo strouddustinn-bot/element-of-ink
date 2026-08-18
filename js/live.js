@@ -316,7 +316,7 @@
 
   document.querySelectorAll(".mosaic .panel").forEach(function (panel) {
     var img = panel.querySelector("img");
-    if (!img) return;
+    if (!img || img.getAttribute("data-no-ink")) return;
     var armed = false;
     function arm() {
       if (armed) return;
