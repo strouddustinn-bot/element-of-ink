@@ -12,6 +12,10 @@
     return n - Math.floor(n);
   }
 
+  function luminance(data, i) {
+    return (data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114) / 255;
+  }
+
   function magnetize(el) {
     if (!el || !fine || reduce) return;
     el.addEventListener("pointermove", function (e) {
@@ -71,7 +75,9 @@
       '</g></svg>';
     document.body.appendChild(cursor);
 
-    var x = -100, y = -100;
+    var x = -100;
+    var y = -100;
+
     window.addEventListener("pointermove", function (e) {
       x = e.clientX;
       y = e.clientY;
@@ -86,8 +92,7 @@
     });
 
     (function follow() {
-      cursor.style.transform =
-        "translate3d(" + (x - 8) + "px," + (y - 62) + "px,0)";
+      cursor.style.transform = "translate3d(" + (x - 8) + "px," + (y - 62) + "px,0)";
       requestAnimationFrame(follow);
     })();
   }
@@ -100,6 +105,7 @@
     var ir = iw / ih;
     var vr = vw / vh;
     var sx = 1, sy = 1, u = 0, v = 0;
+
     if (ir > vr) {
       sx = vr / ir;
       u = (1 - sx) * ox;
@@ -107,17 +113,23 @@
       sy = ir / vr;
       v = (1 - sy) * oy;
     }
+
     return { u: u, v: v, sx: sx, sy: sy };
   }
 
   function parsePos(img) {
     var st = window.getComputedStyle(img).objectPosition || "50% 50%";
     var parts = st.split(" ");
+
     function pct(s, fb) {
       var n = parseFloat(s);
       return isNaN(n) ? fb : n / 100;
     }
-    return { x: pct(parts[0], 0.5), y: pct(parts[1] || parts[0], 0.5) };
+
+    return {
+      x: pct(parts[0], 0.5),
+      y: pct(parts[1] || parts[0], 0.5)
+    };
   }
 
   function paintCover(ctx, img, pos, w, h) {
@@ -138,6 +150,7 @@
         resolve(null);
         return;
       }
+
       var im = new Image();
       im.onload = function () { resolve(im); };
       im.onerror = function () { resolve(null); };
@@ -145,15 +158,12 @@
     });
   }
 
-  function luminance(data, i) {
-    return (data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114) / 255;
-  }
-
   function buildLocalAverage(src) {
     var w = src.width;
     var h = src.height;
     var tiny = document.createElement("canvas");
     var avg = document.createElement("canvas");
+
     tiny.width = Math.max(24, Math.round(w / 11));
     tiny.height = Math.max(24, Math.round(h / 11));
     avg.width = w;
@@ -161,12 +171,15 @@
 
     var tctx = tiny.getContext("2d");
     var actx = avg.getContext("2d");
+
     tctx.imageSmoothingEnabled = true;
     tctx.imageSmoothingQuality = "high";
     tctx.drawImage(src, 0, 0, tiny.width, tiny.height);
+
     actx.imageSmoothingEnabled = true;
     actx.imageSmoothingQuality = "high";
     actx.drawImage(tiny, 0, 0, w, h);
+
     return avg;
   }
 
@@ -182,10 +195,12 @@
       var mctx = mc.getContext("2d", { willReadFrequently: true });
       paintCover(mctx, maskImg, pos, w, h);
       var md = mctx.getImageData(0, 0, w, h).data;
+
       for (var mi = 0, mp = 0; mi < md.length; mi += 4, mp++) {
         var rgb = Math.max(md[mi], md[mi + 1], md[mi + 2]);
         confidence[mp] = Math.round(rgb * (md[mi + 3] / 255));
       }
+
       return {
         confidence: confidence,
         explicit: true,
@@ -206,8 +221,12 @@
       var darkness = clamp((0.60 - lum) / 0.42, 0, 1);
       var usableBase = clamp((baseLum - 0.19) / 0.40, 0, 1);
       var score = contrast * 5.2 + darkness * 0.22 * usableBase;
+
       if (baseLum < 0.17 || lum > 0.62) score = 0;
-      confidence[p] = Math.round(clamp((score - 0.13) / 0.49, 0, 1) * 255);
+
+      confidence[p] = Math.round(
+        clamp((score - 0.13) / 0.49, 0, 1) * 255
+      );
     }
 
     return {
@@ -217,153 +236,14 @@
     };
   }
 
-  function buildSkinPlate(work, maskResult) {
-    var w = work.width;
-    var h = work.height;
-    var srcCtx = work.getContext("2d", { willReadFrequently: true });
-    var srcImg = srcCtx.getImageData(0, 0, w, h);
-    var src = srcImg.data;
-    var conf = maskResult.confidence;
-    var out = new Uint8ClampedArray(src);
-    var filled = new Uint8Array(w * h);
-    var originalMask = new Uint8Array(w * h);
-    var queue = new Int32Array(w * h);
-    var head = 0;
-    var tail = 0;
-    var dirs = [
-      [-1, -1], [0, -1], [1, -1],
-      [-1, 0],           [1, 0],
-      [-1, 1],  [0, 1],  [1, 1]
-    ];
-
-    for (var i = 0; i < conf.length; i++) {
-      if (conf[i] >= 76) originalMask[i] = 1;
-      else filled[i] = 1;
-    }
-
-    for (var y = 0; y < h; y++) {
-      for (var x = 0; x < w; x++) {
-        var pi = y * w + x;
-        if (!originalMask[pi]) continue;
-
-        var sr = 0, sg = 0, sb = 0, n = 0;
-        for (var d = 0; d < dirs.length; d++) {
-          var nx = x + dirs[d][0];
-          var ny = y + dirs[d][1];
-          if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
-          var ni = ny * w + nx;
-          if (originalMask[ni]) continue;
-          var oi = ni * 4;
-          sr += src[oi];
-          sg += src[oi + 1];
-          sb += src[oi + 2];
-          n++;
-        }
-
-        if (n) {
-          var o = pi * 4;
-          out[o] = Math.round(sr / n);
-          out[o + 1] = Math.round(sg / n);
-          out[o + 2] = Math.round(sb / n);
-          out[o + 3] = 255;
-          filled[pi] = 1;
-          queue[tail++] = pi;
-        }
-      }
-    }
-
-    while (head < tail) {
-      var cur = queue[head++];
-      var cx = cur % w;
-      var cy = Math.floor(cur / w);
-
-      for (d = 0; d < dirs.length; d++) {
-        nx = cx + dirs[d][0];
-        ny = cy + dirs[d][1];
-        if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
-        ni = ny * w + nx;
-        if (!originalMask[ni] || filled[ni]) continue;
-
-        sr = 0; sg = 0; sb = 0; n = 0;
-        for (var nd = 0; nd < dirs.length; nd++) {
-          var ax = nx + dirs[nd][0];
-          var ay = ny + dirs[nd][1];
-          if (ax < 0 || ay < 0 || ax >= w || ay >= h) continue;
-          var ai = ay * w + ax;
-          if (!filled[ai]) continue;
-          oi = ai * 4;
-          sr += out[oi];
-          sg += out[oi + 1];
-          sb += out[oi + 2];
-          n++;
-        }
-
-        if (n) {
-          o = ni * 4;
-          out[o] = Math.round(sr / n);
-          out[o + 1] = Math.round(sg / n);
-          out[o + 2] = Math.round(sb / n);
-          out[o + 3] = 255;
-          filled[ni] = 1;
-          queue[tail++] = ni;
-        }
-      }
-    }
-
-    var avg = maskResult.average || buildLocalAverage(work);
-    var avgData = avg.getContext("2d", { willReadFrequently: true })
-      .getImageData(0, 0, w, h).data;
-    for (i = 0; i < originalMask.length; i++) {
-      if (!originalMask[i] || filled[i]) continue;
-      o = i * 4;
-      out[o] = avgData[o];
-      out[o + 1] = avgData[o + 1];
-      out[o + 2] = avgData[o + 2];
-      out[o + 3] = 255;
-      filled[i] = 1;
-    }
-
-    for (var pass = 0; pass < 2; pass++) {
-      var next = new Uint8ClampedArray(out);
-      for (y = 1; y < h - 1; y++) {
-        for (x = 1; x < w - 1; x++) {
-          pi = y * w + x;
-          if (!originalMask[pi]) continue;
-          sr = 0; sg = 0; sb = 0; n = 0;
-          for (d = 0; d < dirs.length; d++) {
-            ni = (y + dirs[d][1]) * w + (x + dirs[d][0]);
-            oi = ni * 4;
-            sr += out[oi];
-            sg += out[oi + 1];
-            sb += out[oi + 2];
-            n++;
-          }
-          o = pi * 4;
-          next[o] = Math.round((out[o] * 2 + sr / n) / 3);
-          next[o + 1] = Math.round((out[o + 1] * 2 + sg / n) / 3);
-          next[o + 2] = Math.round((out[o + 2] * 2 + sb / n) / 3);
-          next[o + 3] = 255;
-        }
-      }
-      out = next;
-    }
-
-    var plate = document.createElement("canvas");
-    plate.width = w;
-    plate.height = h;
-    var pctx = plate.getContext("2d");
-    var plateImg = pctx.createImageData(w, h);
-    plateImg.data.set(out);
-    pctx.putImageData(plateImg, 0, 0);
-    return plate;
-  }
-
   function dilate(binary, w, h) {
     var out = new Uint8Array(binary.length);
+
     for (var y = 0; y < h; y++) {
       for (var x = 0; x < w; x++) {
         var i = y * w + x;
         if (!binary[i]) continue;
+
         for (var yy = Math.max(0, y - 1); yy <= Math.min(h - 1, y + 1); yy++) {
           for (var xx = Math.max(0, x - 1); xx <= Math.min(w - 1, x + 1); xx++) {
             out[yy * w + xx] = 1;
@@ -371,11 +251,13 @@
         }
       }
     }
+
     return out;
   }
 
   function connectedComponents(confidence, w, h) {
     var base = new Uint8Array(confidence.length);
+
     for (var i = 0; i < confidence.length; i++) {
       if (confidence[i] >= 100) base[i] = 1;
     }
@@ -396,7 +278,8 @@
         var start = y * w + x;
         if (!binary[start] || seen[start]) continue;
 
-        var head = 0, tail = 0;
+        var head = 0;
+        var tail = 0;
         qx[tail] = x;
         qy[tail] = y;
         tail++;
@@ -423,8 +306,10 @@
             var nx = cx + dirs[d][0];
             var ny = cy + dirs[d][1];
             if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+
             var ni = ny * w + nx;
             if (!binary[ni] || seen[ni]) continue;
+
             seen[ni] = 1;
             qx[tail] = nx;
             qy[tail] = ny;
@@ -458,6 +343,7 @@
 
     var cell = 28;
     var buckets = Object.create(null);
+
     for (var i = 0; i < component.pixels.length; i++) {
       var pi = component.pixels[i];
       var x = pi % w;
@@ -465,24 +351,144 @@
       var bx = Math.floor((x - component.minX) / cell);
       var by = Math.floor((y - component.minY) / cell);
       var key = bx + ":" + by;
+
       if (!buckets[key]) buckets[key] = [];
       buckets[key].push(pi);
     }
 
     var groups = [];
+
     Object.keys(buckets).forEach(function (key) {
       if (buckets[key].length >= 5) groups.push(buckets[key]);
     });
+
     return groups;
   }
 
-  function makeGroup(pixelIndices, work, maskResult, skinPlate) {
+  function median(values) {
+    if (!values.length) return 0;
+    values.sort(function (a, b) { return a - b; });
+    var mid = Math.floor(values.length / 2);
+    return values.length % 2
+      ? values[mid]
+      : (values[mid - 1] + values[mid]) * 0.5;
+  }
+
+  function sampleSurroundingTone(src, confidence, w, h, bounds) {
+    var samples = [];
+    var radii = [3, 5, 8, 12, 18, 26];
+
+    for (var ri = 0; ri < radii.length && samples.length < 80; ri++) {
+      var r = radii[ri];
+      var left = Math.max(0, bounds.minX - r);
+      var right = Math.min(w - 1, bounds.maxX + r);
+      var top = Math.max(0, bounds.minY - r);
+      var bottom = Math.min(h - 1, bounds.maxY + r);
+
+      for (var y = top; y <= bottom; y++) {
+        for (var x = left; x <= right; x++) {
+          var outside =
+            x < bounds.minX ||
+            x > bounds.maxX ||
+            y < bounds.minY ||
+            y > bounds.maxY;
+
+          if (!outside) continue;
+
+          var onRing =
+            x === left || x === right ||
+            y === top || y === bottom;
+
+          if (!onRing) continue;
+
+          var pi = y * w + x;
+          if (confidence[pi] > 34) continue;
+
+          var oi = pi * 4;
+          var lum = luminance(src, oi);
+          if (lum < 0.20 || lum > 0.94) continue;
+
+          samples.push({
+            r: src[oi],
+            g: src[oi + 1],
+            b: src[oi + 2]
+          });
+        }
+      }
+    }
+
+    if (samples.length < 12) {
+      var left2 = Math.max(0, bounds.minX - 32);
+      var right2 = Math.min(w - 1, bounds.maxX + 32);
+      var top2 = Math.max(0, bounds.minY - 32);
+      var bottom2 = Math.min(h - 1, bounds.maxY + 32);
+
+      for (var yy = top2; yy <= bottom2 && samples.length < 180; yy += 2) {
+        for (var xx = left2; xx <= right2 && samples.length < 180; xx += 2) {
+          var pii = yy * w + xx;
+          if (confidence[pii] > 48) continue;
+
+          var oii = pii * 4;
+          var l = luminance(src, oii);
+          if (l < 0.18 || l > 0.95) continue;
+
+          samples.push({
+            r: src[oii],
+            g: src[oii + 1],
+            b: src[oii + 2]
+          });
+        }
+      }
+    }
+
+    if (!samples.length) {
+      return { r: 190, g: 150, b: 125 };
+    }
+
+    var rs = samples.map(function (s) { return s.r; });
+    var gs = samples.map(function (s) { return s.g; });
+    var bs = samples.map(function (s) { return s.b; });
+
+    var mr = median(rs);
+    var mg = median(gs);
+    var mb = median(bs);
+
+    var sr = 0, sg = 0, sb = 0, n = 0;
+
+    for (var i = 0; i < samples.length; i++) {
+      var s = samples[i];
+      var dr = s.r - mr;
+      var dg = s.g - mg;
+      var db = s.b - mb;
+      var dist2 = dr * dr + dg * dg + db * db;
+
+      if (dist2 > 3200) continue;
+
+      sr += s.r;
+      sg += s.g;
+      sb += s.b;
+      n++;
+    }
+
+    if (!n) {
+      return {
+        r: Math.round(mr),
+        g: Math.round(mg),
+        b: Math.round(mb)
+      };
+    }
+
+    return {
+      r: Math.round(sr / n),
+      g: Math.round(sg / n),
+      b: Math.round(sb / n)
+    };
+  }
+
+  function makeGroup(pixelIndices, work, maskResult, sourceData) {
     var w = work.width;
     var h = work.height;
-    var srcCtx = work.getContext("2d", { willReadFrequently: true });
-    var src = srcCtx.getImageData(0, 0, w, h).data;
-    var skinData = skinPlate.getContext("2d", { willReadFrequently: true })
-      .getImageData(0, 0, w, h).data;
+    var src = sourceData;
     var conf = maskResult.confidence;
 
     var minX = w, minY = h, maxX = 0, maxY = 0;
@@ -493,10 +499,12 @@
       var x = pi % w;
       var y = Math.floor(pi / w);
       var weight = Math.max(1, conf[pi]);
+
       if (x < minX) minX = x;
       if (y < minY) minY = y;
       if (x > maxX) maxX = x;
       if (y > maxY) maxY = y;
+
       sumX += x * weight;
       sumY += y * weight;
       sumWeight += weight;
@@ -504,9 +512,18 @@
 
     if (!sumWeight) return null;
 
+    var rawBounds = {
+      minX: minX,
+      minY: minY,
+      maxX: maxX,
+      maxY: maxY
+    };
+
+    var tone = sampleSurroundingTone(src, conf, w, h, rawBounds);
     var cx = sumX / sumWeight;
     var cy = sumY / sumWeight;
-    var pad = 3;
+
+    var pad = 5;
     minX = Math.max(0, minX - pad);
     minY = Math.max(0, minY - pad);
     maxX = Math.min(w - 1, maxX + pad);
@@ -514,6 +531,7 @@
 
     var sw = maxX - minX + 1;
     var sh = maxY - minY + 1;
+
     var sprite = document.createElement("canvas");
     var base = document.createElement("canvas");
     sprite.width = base.width = sw;
@@ -523,26 +541,50 @@
     var bctx = base.getContext("2d");
     var sImg = sctx.createImageData(sw, sh);
     var bImg = bctx.createImageData(sw, sh);
+    var exact = new Uint8Array(sw * sh);
 
     for (i = 0; i < pixelIndices.length; i++) {
       pi = pixelIndices[i];
       x = pi % w;
       y = Math.floor(pi / w);
+
       if (x < minX || y < minY || x > maxX || y > maxY) continue;
 
       var srcI = pi * 4;
-      var localI = ((y - minY) * sw + (x - minX)) * 4;
-      var alpha = Math.round(clamp((conf[pi] - 52) / 145, 0, 1) * 255);
+      var li = (y - minY) * sw + (x - minX);
+      var localI = li * 4;
+      var spriteAlpha = Math.round(
+        clamp((conf[pi] - 50) / 142, 0, 1) * 255
+      );
+
+      exact[li] = 1;
 
       sImg.data[localI] = src[srcI];
       sImg.data[localI + 1] = src[srcI + 1];
       sImg.data[localI + 2] = src[srcI + 2];
-      sImg.data[localI + 3] = alpha;
+      sImg.data[localI + 3] = spriteAlpha;
+    }
 
-      bImg.data[localI] = skinData[srcI];
-      bImg.data[localI + 1] = skinData[srcI + 1];
-      bImg.data[localI + 2] = skinData[srcI + 2];
-      bImg.data[localI + 3] = Math.round(alpha * 0.99);
+    var expanded = dilate(exact, sw, sh);
+    var feather = dilate(expanded, sw, sh);
+
+    for (var ly = 0; ly < sh; ly++) {
+      for (var lx = 0; lx < sw; lx++) {
+        var lpi = ly * sw + lx;
+        var alpha = 0;
+
+        if (exact[lpi]) alpha = 255;
+        else if (expanded[lpi]) alpha = 235;
+        else if (feather[lpi]) alpha = 92;
+
+        if (!alpha) continue;
+
+        var bi = lpi * 4;
+        bImg.data[bi] = tone.r;
+        bImg.data[bi + 1] = tone.g;
+        bImg.data[bi + 2] = tone.b;
+        bImg.data[bi + 3] = alpha;
+      }
     }
 
     sctx.putImageData(sImg, 0, 0);
@@ -558,11 +600,10 @@
       cy: cy,
       relX: minX - cx,
       relY: minY - cy,
-      width: sw,
-      height: sh,
       radius: radius,
       sprite: sprite,
       base: base,
+      skinTone: tone,
       seed: deterministicSeed(cx, cy),
       ox: 0,
       oy: 0,
@@ -575,7 +616,7 @@
     };
   }
 
-  function buildGroups(work, maskResult, skinPlate) {
+  function buildGroups(work, maskResult) {
     var w = work.width;
     var h = work.height;
     var components = connectedComponents(maskResult.confidence, w, h);
@@ -583,17 +624,34 @@
 
     for (var i = 0; i < components.length; i++) {
       var split = splitLargeComponent(components[i], w);
+
       for (var j = 0; j < split.length; j++) {
         pixelGroups.push(split[j]);
       }
     }
 
-    pixelGroups.sort(function (a, b) { return b.length - a.length; });
-    if (pixelGroups.length > 420) pixelGroups.length = 420;
+    pixelGroups.sort(function (a, b) {
+      return b.length - a.length;
+    });
+
+    if (pixelGroups.length > 420) {
+      pixelGroups.length = 420;
+    }
+
+    var sourceData = work
+      .getContext("2d", { willReadFrequently: true })
+      .getImageData(0, 0, w, h).data;
 
     var groups = [];
+
     for (i = 0; i < pixelGroups.length; i++) {
-      var group = makeGroup(pixelGroups[i], work, maskResult, skinPlate);
+      var group = makeGroup(
+        pixelGroups[i],
+        work,
+        maskResult,
+        sourceData
+      );
+
       if (group) groups.push(group);
     }
 
@@ -604,6 +662,7 @@
     var wrap = opts.container;
     var img = opts.image;
     var canvas = opts.canvas;
+
     if (!wrap || !img || !canvas || !img.naturalWidth) return null;
 
     var ctx = canvas.getContext("2d");
@@ -612,6 +671,7 @@
     var pos = parsePos(img);
     var displayW = Math.max(1, wrap.clientWidth);
     var displayH = Math.max(1, wrap.clientHeight);
+
     var work = document.createElement("canvas");
     work.width = 360;
     work.height = Math.max(1, Math.round(360 * displayH / displayW));
@@ -620,8 +680,8 @@
     paintCover(wctx, img, pos, work.width, work.height);
 
     var maskResult = buildMask(work, opts.mask || null, pos);
-    var skinPlate = buildSkinPlate(work, maskResult);
-    var groups = buildGroups(work, maskResult, skinPlate);
+    var groups = buildGroups(work, maskResult);
+
     if (!groups.length) return null;
 
     img.style.opacity = "1";
@@ -637,6 +697,7 @@
     var fps = 0;
 
     var hud = null;
+
     if (debug) {
       hud = document.createElement("div");
       hud.style.cssText =
@@ -652,10 +713,12 @@
       var dpr = Math.min(window.devicePixelRatio || 1, 1.5);
       var dw = Math.round(w * dpr);
       var dh = Math.round(h * dpr);
+
       if (canvas.width !== dw || canvas.height !== dh) {
         canvas.width = dw;
         canvas.height = dh;
       }
+
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       return { w: w, h: h };
     }
@@ -670,6 +733,7 @@
     function localPoint(e) {
       var r = wrap.getBoundingClientRect();
       if (!r.width || !r.height) return;
+
       cursor.x = clamp(e.clientX - r.left, 0, r.width);
       cursor.y = clamp(e.clientY - r.top, 0, r.height);
       kick();
@@ -688,8 +752,10 @@
     function tick(now) {
       var dt = clamp((now - last) / 1000, 0.001, 0.033);
       last = now;
+
       fpsFrames++;
       fpsTime += dt;
+
       if (fpsTime >= 0.5) {
         fps = Math.round(fpsFrames / fpsTime);
         fpsFrames = 0;
@@ -714,6 +780,7 @@
         var homeX = g.cx * scaleX;
         var homeY = g.cy * scaleY;
         var radiusPx = g.radius * minScale;
+
         var targetX = 0;
         var targetY = 0;
         var targetZ = 0;
@@ -740,6 +807,7 @@
             var nx = dx / dist;
             var ny = dy / dist;
             var push = (18 + Math.min(14, radiusPx * 0.16)) * influence;
+
             targetX = nx * push;
             targetY = ny * push;
             targetZ = influence;
@@ -781,7 +849,7 @@
         anyMoving = true;
         activeCount++;
 
-        var holeAlpha = clamp(motion / 3.8 + g.z * 0.9, 0, 0.995);
+        var holeAlpha = clamp(motion / 2.6 + g.z * 1.08, 0, 1);
 
         ctx.save();
         ctx.globalAlpha = holeAlpha;
@@ -793,9 +861,12 @@
         ctx.save();
         ctx.translate(homeX + g.ox, homeY + g.oy - g.z * 6);
         ctx.rotate(g.angle);
+
         var liftScale = 1 + g.z * 0.055;
         ctx.scale(scaleX * liftScale, scaleY * liftScale);
-        ctx.shadowColor = "rgba(10,4,7," + clamp(g.z * 0.30, 0, 0.25) + ")";
+
+        ctx.shadowColor =
+          "rgba(10,4,7," + clamp(g.z * 0.30, 0, 0.25) + ")";
         ctx.shadowBlur = g.z * 7;
         ctx.shadowOffsetY = g.z * 3;
         ctx.drawImage(g.sprite, g.relX, g.relY);
@@ -862,15 +933,20 @@
       });
     }
 
-    if (img.complete && img.naturalWidth) start();
-    else img.addEventListener("load", start, { once: true });
+    if (img.complete && img.naturalWidth) {
+      start();
+    } else {
+      img.addEventListener("load", start, { once: true });
+    }
   }
 
   document.querySelectorAll(".mosaic .panel").forEach(function (panel) {
     var img = panel.querySelector("img");
+
     if (!img || img.getAttribute("data-no-ink")) return;
 
     var armed = false;
+
     function arm() {
       if (armed) return;
       armed = true;
