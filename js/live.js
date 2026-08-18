@@ -1,14 +1,15 @@
 (function () {
   var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var fine = window.matchMedia("(pointer: fine)").matches;
+  var debug = /(?:\?|&)inkDebug=1(?:&|$)/.test(location.search);
 
   function magnetize(el) {
     if (!el || !fine || reduce) return;
     el.addEventListener("pointermove", function (e) {
       var r = el.getBoundingClientRect();
-      el.style.transform = "translate(" +
-        ((e.clientX - (r.left + r.width / 2)) * 0.16) + "px," +
-        ((e.clientY - (r.top + r.height / 2)) * 0.16) + "px)";
+      var x = e.clientX - (r.left + r.width / 2);
+      var y = e.clientY - (r.top + r.height / 2);
+      el.style.transform = "translate(" + (x * 0.16) + "px," + (y * 0.16) + "px)";
     });
     el.addEventListener("pointerleave", function () {
       el.style.transform = "";
@@ -34,6 +35,8 @@
       requestAnimationFrame(follow);
     })();
   }
+
+  if (reduce) return;
 
   function coverUV(iw, ih, vw, vh, ox, oy) {
     var ir = iw / ih, vr = vw / vh;
@@ -63,198 +66,269 @@
     );
   }
 
-  function lumOf(d, i) {
-    return (d[i] * 0.299 + d[i + 1] * 0.587 + d[i + 2] * 0.114) / 255;
+  function loadOptional(src) {
+    return new Promise(function (resolve) {
+      if (!src) { resolve(null); return; }
+      var im = new Image();
+      im.onload = function () { resolve(im); };
+      im.onerror = function () { resolve(null); };
+      im.src = src;
+    });
   }
 
-  function buildShards(img, pos) {
-    var COLS = 24;
-    var ROWS = 30;
-    var src = document.createElement("canvas");
-    src.width = COLS * 10;
-    src.height = ROWS * 10;
+  function makeMask(src, w, h, maskImg) {
+    var c = document.createElement("canvas");
+    c.width = w; c.height = h;
+    var ctx = c.getContext("2d", { willReadFrequently: true });
+    if (maskImg) {
+      ctx.drawImage(maskImg, 0, 0, w, h);
+      return ctx.getImageData(0, 0, w, h);
+    }
+    ctx.drawImage(src, 0, 0);
+    var data = ctx.getImageData(0, 0, w, h);
+    var p = data.data, i;
+    for (i = 0; i < p.length; i += 4) {
+      var lum = (p[i] * 0.299 + p[i + 1] * 0.587 + p[i + 2] * 0.114) / 255;
+      var ink = lum < 0.38 ? 255 : 0;
+      p[i] = p[i + 1] = p[i + 2] = ink;
+      p[i + 3] = 255;
+    }
+    return data;
+  }
+
+  function makeSkin(src, mask, w, h, plateImg) {
+    var c = document.createElement("canvas");
+    c.width = w; c.height = h;
+    var ctx = c.getContext("2d");
+    if (plateImg) {
+      ctx.drawImage(plateImg, 0, 0, w, h);
+      return c;
+    }
+    ctx.drawImage(src, 0, 0);
+    var img = ctx.getImageData(0, 0, w, h);
+    var d = img.data, m = mask.data;
+    var sr = 0, sg = 0, sb = 0, n = 0, i;
+    for (i = 0; i < d.length; i += 4) {
+      if (m[i] < 40) { sr += d[i]; sg += d[i + 1]; sb += d[i + 2]; n += 1; }
+    }
+    if (n) {
+      sr = Math.round(sr / n); sg = Math.round(sg / n); sb = Math.round(sb / n);
+      for (i = 0; i < d.length; i += 4) {
+        if (m[i] > 80) { d[i] = sr; d[i + 1] = sg; d[i + 2] = sb; }
+      }
+      ctx.putImageData(img, 0, 0);
+    }
+    return c;
+  }
+
+  function spawnParticles(src, mask, count) {
+    var w = src.width, h = src.height;
     var sctx = src.getContext("2d", { willReadFrequently: true });
-    if (!sctx) return null;
-    try {
-      paintCover(sctx, img, pos, src.width, src.height);
-    } catch (err) {
-      return null;
-    }
-    var cellW = src.width / COLS;
-    var cellH = src.height / ROWS;
-    var shards = [];
-    var j, i;
-    for (j = 0; j < ROWS; j++) {
-      for (i = 0; i < COLS; i++) {
-        var x = Math.floor(i * cellW);
-        var y = Math.floor(j * cellH);
-        var w = Math.max(1, Math.ceil(cellW));
-        var h = Math.max(1, Math.ceil(cellH));
-        var copy;
-        try {
-          copy = sctx.getImageData(x, y, w, h);
-        } catch (err) {
-          return null;
-        }
-        var d = copy.data;
-        var p, count = 0, sum = 0, dark = 0;
-        var lightR = 0, lightG = 0, lightB = 0, lightN = 0;
-        for (p = 0; p < d.length; p += 4) {
-          if (d[p + 3] < 40) continue;
-          var L = lumOf(d, p);
-          count += 1;
-          sum += L;
-          if (L < 0.34) dark += 1;
-          else {
-            lightR += d[p];
-            lightG += d[p + 1];
-            lightB += d[p + 2];
-            lightN += 1;
-          }
-        }
-        if (!count || dark / count < 0.22) continue;
-        var mean = sum / count;
-        var cut = Math.min(0.34, mean * 0.78);
-        var ink = document.createElement("canvas");
-        var hole = document.createElement("canvas");
-        ink.width = hole.width = w;
-        ink.height = hole.height = h;
-        var inkC = ink.getContext("2d");
-        var holeC = hole.getContext("2d");
-        var inkData = sctx.getImageData(x, y, w, h);
-        var holeData = sctx.getImageData(x, y, w, h);
-        var ir = lightN ? Math.round(lightR / lightN) : 160;
-        var ig = lightN ? Math.round(lightG / lightN) : 140;
-        var ib = lightN ? Math.round(lightB / lightN) : 130;
-        var q, inkN = 0;
-        for (q = 0; q < inkData.data.length; q += 4) {
-          var LL = lumOf(inkData.data, q);
-          if (LL <= cut) {
-            inkN += 1;
-            holeData.data[q] = ir;
-            holeData.data[q + 1] = ig;
-            holeData.data[q + 2] = ib;
-          } else {
-            inkData.data[q + 3] = 0;
-          }
-        }
-        if (inkN < 8) continue;
-        inkC.putImageData(inkData, 0, 0);
-        holeC.putImageData(holeData, 0, 0);
-        shards.push({
-          ink: ink,
-          hole: hole,
-          u: i / COLS,
-          v: j / ROWS,
-          uw: 1 / COLS,
-          vh: 1 / ROWS,
-          dens: dark / count,
-          ox: 0,
-          oy: 0
-        });
+    var pix = sctx.getImageData(0, 0, w, h).data;
+    var m = mask.data;
+    var homes = [];
+    var x, y, i;
+    for (y = 0; y < h; y++) {
+      for (x = 0; x < w; x++) {
+        i = (y * w + x) * 4;
+        if (m[i] > 90) homes.push(x, y, pix[i], pix[i + 1], pix[i + 2]);
       }
     }
-    return shards.length ? { shards: shards, src: src } : null;
+    var avail = homes.length / 5;
+    if (!avail) return null;
+    var stride = Math.max(1, Math.floor(avail / count));
+    var out = [];
+    for (i = 0; i < avail && out.length < count; i += stride) {
+      var o = i * 5;
+      var seed = Math.random();
+      out.push({
+        hx: homes[o] / w,
+        hy: homes[o + 1] / h,
+        x: homes[o] / w,
+        y: homes[o + 1] / h,
+        vx: 0, vy: 0, z: 0, vz: 0,
+        r: homes[o + 2], g: homes[o + 3], b: homes[o + 4],
+        size: 1.2 + seed * 2.6,
+        seed: seed,
+        ang: 0
+      });
+    }
+    return out.length ? out : null;
   }
 
-  function bindShards(wrap, img, canvas) {
-    if (!wrap || !img || !canvas) return;
-    function start() {
-      if (!img.naturalWidth) return;
-      var ctx = canvas.getContext("2d");
-      if (!ctx) return;
-      var pos = parsePos(img);
-      var pack = buildShards(img, pos);
-      if (!pack) return;
-      var shards = pack.shards;
+  function createInkInteraction(opts) {
+    var wrap = opts.container;
+    var img = opts.image;
+    var canvas = opts.canvas;
+    if (!wrap || !img || !canvas || !img.naturalWidth) return null;
+    var ctx = canvas.getContext("2d");
+    if (!ctx) return null;
 
-      var cursor = { x: -1, y: -1 };
-      wrap.classList.add("is-live");
+    var pos = parsePos(img);
+    var work = document.createElement("canvas");
+    work.width = 360;
+    work.height = Math.round(360 * img.naturalHeight / img.naturalWidth);
+    var wctx = work.getContext("2d");
+    paintCover(wctx, img, pos, work.width, work.height);
 
-      function localPoint(e) {
-        var r = wrap.getBoundingClientRect();
-        if (!r.width || !r.height) return;
-        cursor.x = (e.clientX - r.left) / r.width;
-        cursor.y = (e.clientY - r.top) / r.height;
-      }
-      function clearPoint() {
-        cursor.x = -1;
-        cursor.y = -1;
-      }
-      wrap.addEventListener("pointermove", localPoint, { passive: true });
-      wrap.addEventListener("pointerenter", localPoint, { passive: true });
-      wrap.addEventListener("pointerleave", clearPoint);
-      if (wrap.parentElement && wrap.parentElement.classList.contains("hero")) {
-        wrap.parentElement.addEventListener("pointermove", localPoint, { passive: true });
-        wrap.parentElement.addEventListener("pointerleave", clearPoint);
-      }
+    var mask = makeMask(work, work.width, work.height, opts.mask || null);
+    var skin = makeSkin(work, mask, work.width, work.height, opts.cleanPlate || null);
+    var particles = spawnParticles(work, mask, opts.count || 9000);
+    if (!particles) return null;
 
-      function draw() {
-        var w = canvas.clientWidth || wrap.clientWidth;
-        var h = canvas.clientHeight || wrap.clientHeight;
-        if (w >= 8 && h >= 8) {
-          if (canvas.width !== w) canvas.width = w;
-          if (canvas.height !== h) canvas.height = h;
+    var cursor = { x: -1, y: -1, px: 70 };
+    wrap.classList.add("is-live");
 
-          var reach = Math.min(w, h) * 0.11;
-          var s;
-          for (s = 0; s < shards.length; s++) {
-            var sh = shards[s];
-            var cx = (sh.u + sh.uw * 0.5) * w;
-            var cy = (sh.v + sh.vh * 0.5) * h;
-            var tx = 0;
-            var ty = 0;
-            if (cursor.x >= 0) {
-              var dx = cx - cursor.x * w;
-              var dy = cy - cursor.y * h;
-              var d = Math.sqrt(dx * dx + dy * dy);
-              var t = 1 - Math.min(d / reach, 1);
-              t = t * t * (3 - 2 * t);
-              if (t > 0.02) {
-                var push = t * (18 + sh.dens * 14);
-                tx = (dx / (d + 8)) * push;
-                ty = (dy / (d + 8)) * push;
-              }
-            }
-            sh.ox += (tx - sh.ox) * 0.24;
-            sh.oy += (ty - sh.oy) * 0.24;
+    function localPoint(e) {
+      var r = wrap.getBoundingClientRect();
+      if (!r.width || !r.height) return;
+      cursor.x = (e.clientX - r.left) / r.width;
+      cursor.y = (e.clientY - r.top) / r.height;
+      cursor.px = 72;
+    }
+    function clearPoint() { cursor.x = -1; cursor.y = -1; }
+
+    wrap.addEventListener("pointermove", localPoint, { passive: true });
+    wrap.addEventListener("pointerenter", localPoint, { passive: true });
+    wrap.addEventListener("pointerleave", clearPoint);
+
+    var hud = null;
+    if (debug) {
+      hud = document.createElement("div");
+      hud.style.cssText = "position:absolute;left:6px;top:6px;z-index:5;font:11px/1.3 monospace;color:#f3c15a;background:rgba(0,0,0,.55);padding:4px 6px;pointer-events:none";
+      wrap.appendChild(hud);
+    }
+
+    var last = performance.now();
+    var frames = 0, fps = 0, acc = 0;
+
+    function tick(now) {
+      var dt = Math.min(0.033, (now - last) / 1000);
+      last = now;
+      frames += 1; acc += dt;
+      if (acc >= 0.5) { fps = Math.round(frames / acc); frames = 0; acc = 0; }
+
+      var w = canvas.clientWidth || wrap.clientWidth;
+      var h = canvas.clientHeight || wrap.clientHeight;
+      if (w > 8 && h > 8) {
+        if (canvas.width !== w) canvas.width = w;
+        if (canvas.height !== h) canvas.height = h;
+        var radius = 72 / Math.min(w, h);
+        var maxPush = 30 / Math.min(w, h);
+        var p, dx, dy, dist, infl, nx, ny;
+        for (var i = 0; i < particles.length; i++) {
+          p = particles[i];
+          if (cursor.x >= 0) {
+            dx = p.x - cursor.x;
+            dy = p.y - cursor.y;
+            dist = Math.sqrt(dx * dx + dy * dy) || 0.0001;
+            infl = 1 - Math.min(dist / radius, 1);
+            infl = infl * infl;
+            nx = dx / dist; ny = dy / dist;
+            p.vx += nx * infl * 2.6;
+            p.vy += ny * infl * 2.6;
+            p.vz += infl * 0.9;
           }
+          p.vx += (p.hx - p.x) * 18 * dt;
+          p.vy += (p.hy - p.y) * 18 * dt;
+          p.vz += (0 - p.z) * 16 * dt;
+          p.vx *= 0.78; p.vy *= 0.78; p.vz *= 0.8;
+          p.x += p.vx * dt * 8;
+          p.y += p.vy * dt * 8;
+          p.z += p.vz * dt;
+          if (p.z < 0) p.z = 0;
+          var ox = p.x - p.hx, oy = p.y - p.hy;
+          var mag = Math.sqrt(ox * ox + oy * oy);
+          if (mag > maxPush) {
+            p.x = p.hx + ox / mag * maxPush;
+            p.y = p.hy + oy / mag * maxPush;
+          }
+          p.ang = (p.seed - 0.5) * p.z * 1.4;
+        }
 
-          ctx.clearRect(0, 0, w, h);
-          paintCover(ctx, img, pos, w, h);
-          for (s = 0; s < shards.length; s++) {
-            sh = shards[s];
-            if (Math.abs(sh.ox) + Math.abs(sh.oy) < 0.35) continue;
-            var dw = sh.uw * w + 1;
-            var dh = sh.vh * h + 1;
-            ctx.drawImage(sh.hole, 0, 0, sh.hole.width, sh.hole.height, sh.u * w, sh.v * h, dw, dh);
-            ctx.drawImage(sh.ink, 0, 0, sh.ink.width, sh.ink.height, sh.u * w + sh.ox, sh.v * h + sh.oy, dw, dh);
+        ctx.clearRect(0, 0, w, h);
+        ctx.drawImage(skin, 0, 0, w, h);
+        for (i = 0; i < particles.length; i++) {
+          p = particles[i];
+          var lift = p.z;
+          var s = p.size * (1 + lift * 0.55);
+          var px = p.x * w;
+          var py = p.y * h - lift * 10;
+          if (lift > 0.08) {
+            ctx.fillStyle = "rgba(20,8,10," + Math.min(0.35, lift * 0.28) + ")";
+            ctx.beginPath();
+            ctx.ellipse(px, py + 4 + lift * 6, s * 0.7, s * 0.35, 0, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          var shade = 0.82 + lift * 0.28;
+          ctx.save();
+          ctx.translate(px, py);
+          ctx.rotate(p.ang);
+          ctx.fillStyle = "rgb(" +
+            Math.min(255, p.r * shade) + "," +
+            Math.min(255, p.g * shade) + "," +
+            Math.min(255, p.b * shade) + ")";
+          ctx.fillRect(-s * 0.5, -s * 0.35, s, s * 0.7);
+          ctx.restore();
+        }
+
+        if (hud) {
+          hud.textContent = particles.length + " pigment · " + fps + " fps";
+          if (cursor.x >= 0) {
+            ctx.strokeStyle = "rgba(243,193,90,.45)";
+            ctx.beginPath();
+            ctx.arc(cursor.x * w, cursor.y * h, 72, 0, Math.PI * 2);
+            ctx.stroke();
           }
         }
-        requestAnimationFrame(draw);
       }
-      requestAnimationFrame(draw);
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+    return { particles: particles };
+  }
+
+  function bindPanel(panel, img) {
+    var canvas = document.createElement("canvas");
+    canvas.className = "ink-live";
+    canvas.setAttribute("aria-hidden", "true");
+    panel.appendChild(canvas);
+    function start() {
+      var base = img.getAttribute("src") || "";
+      var stem = base.replace(/\.[^.]+$/, "");
+      Promise.all([
+        loadOptional(img.getAttribute("data-ink-mask") || stem + ".mask.png"),
+        loadOptional(img.getAttribute("data-ink-skin") || stem + ".skin.jpg")
+      ]).then(function (pair) {
+        createInkInteraction({
+          container: panel,
+          image: img,
+          canvas: canvas,
+          mask: pair[0],
+          cleanPlate: pair[1],
+          count: fine ? 10000 : 5000
+        });
+      });
     }
     if (img.complete && img.naturalWidth) start();
     else img.addEventListener("load", start, { once: true });
   }
 
-  var hero = document.getElementById("hero-photo");
-  if (hero) bindShards(hero, document.getElementById("hero-img"), document.getElementById("hero-live"));
-
   document.querySelectorAll(".mosaic .panel").forEach(function (panel) {
     var img = panel.querySelector("img");
     if (!img) return;
-    var canvas = document.createElement("canvas");
-    canvas.className = "ink-live";
-    canvas.setAttribute("aria-hidden", "true");
-    panel.appendChild(canvas);
     var armed = false;
     function arm() {
       if (armed) return;
       armed = true;
-      bindShards(panel, img, canvas);
+      bindPanel(panel, img);
     }
-    panel.addEventListener("pointerenter", arm);
+    panel.addEventListener("pointerenter", arm, { once: true });
+    if ("IntersectionObserver" in window) {
+      var io = new IntersectionObserver(function (entries) {
+        if (entries.some(function (e) { return e.isIntersecting; })) arm();
+      }, { rootMargin: "80px" });
+      io.observe(panel);
+    }
   });
 })();

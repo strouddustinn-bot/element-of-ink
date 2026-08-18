@@ -348,6 +348,14 @@
       max-height: 78svh;
       box-shadow: 0 18px 40px rgba(0,0,0,.35);
     }
+    .ink-live {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      opacity: 0;
+    }
+    .mosaic .panel.is-live img { opacity: 0; }
+    .mosaic .panel.is-live .ink-live { opacity: 1; }
     .mosaic .panel.is-up {
       box-shadow: 0 28px 70px rgba(0,0,0,.55);
       z-index: 2;
@@ -628,6 +636,8 @@
         <div class="panel"><img class="p-sleeve" src="assets/tattoo-08.jpg" alt="Story sleeve with a teddy bear, baseball, and childhood scenes" width="720" height="1280" loading="lazy" /></div>
         <div class="panel"><img class="p-back" src="assets/tattoo-04.jpg" alt="Large back piece tattoo" width="720" height="1280" loading="lazy" /></div>
         <div class="panel"><img class="p-shady" src="assets/tattoo-03.jpg" alt="Color portrait tattoo" width="720" height="1280" loading="lazy" /></div>
+        <div class="panel"><img class="p-norse" src="assets/tattoo-17.jpg" alt="Norse god and raven sleeve" width="720" height="1280" loading="lazy" /></div>
+        <div class="panel"><img class="p-warrior" src="assets/tattoo-18.jpg" alt="Terracotta warrior tattoo" width="720" height="1280" loading="lazy" /></div>
       </div>
     </section>
 
@@ -816,16 +826,29 @@
   <script>
     (function () {
       var btn = document.getElementById("sound-toggle");
-      var vids = Array.prototype.slice.call(document.querySelectorAll("#hero-videos video"));
-      if (!btn || !vids.length) return;
-      vids.forEach(function (v) { v.play().catch(function () {}); });
+      var tracks = [
+        "assets/audio/track-1.mp3",
+        "assets/audio/track-2.mp3",
+        "assets/audio/track-3.mp3",
+        "assets/audio/track-4.mp3"
+      ];
+      var i = 0;
+      var audio = new Audio(tracks[0]);
+      audio.preload = "metadata";
+      if (!btn) return;
+      document.querySelectorAll("#hero-videos video").forEach(function (v) {
+        v.muted = true;
+        v.play().catch(function () {});
+      });
+      audio.addEventListener("ended", function () {
+        i = (i + 1) % tracks.length;
+        audio.src = tracks[i];
+        audio.play().catch(function () {});
+      });
       btn.addEventListener("click", function () {
         var on = btn.getAttribute("aria-pressed") !== "true";
-        vids.forEach(function (v) {
-          if (v.getAttribute("data-lead")) v.muted = !on;
-          else v.muted = true;
-          v.play().catch(function () {});
-        });
+        if (on) audio.play().catch(function () {});
+        else audio.pause();
         btn.setAttribute("aria-pressed", on ? "true" : "false");
         btn.textContent = on ? "Sound on" : "Sound off";
       });
