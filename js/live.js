@@ -2,24 +2,13 @@
   var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var fine = window.matchMedia("(pointer: fine)").matches;
 
-  var mouse = { x: 0.5, y: 0.42, tx: 0.5, ty: 0.42 };
-  window.addEventListener("pointermove", function (e) {
-    mouse.tx = e.clientX / Math.max(1, window.innerWidth);
-    mouse.ty = e.clientY / Math.max(1, window.innerHeight);
-  }, { passive: true });
-  (function tickMouse() {
-    mouse.x += (mouse.tx - mouse.x) * 0.16;
-    mouse.y += (mouse.ty - mouse.y) * 0.16;
-    requestAnimationFrame(tickMouse);
-  })();
-
   function magnetize(el) {
     if (!el || !fine || reduce) return;
     el.addEventListener("pointermove", function (e) {
       var r = el.getBoundingClientRect();
       var x = e.clientX - (r.left + r.width / 2);
       var y = e.clientY - (r.top + r.height / 2);
-      el.style.transform = "translate(" + (x * 0.18) + "px," + (y * 0.18) + "px)";
+      el.style.transform = "translate(" + (x * 0.16) + "px," + (y * 0.16) + "px)";
     });
     el.addEventListener("pointerleave", function () {
       el.style.transform = "";
@@ -64,111 +53,113 @@
     return { x: pct(parts[0], 0.5), y: pct(parts[1] || parts[0], 0.5) };
   }
 
-  function sampleHeights(img, pos, N) {
-    var cnv = document.createElement("canvas");
-    cnv.width = N;
-    cnv.height = N;
-    var ctx = cnv.getContext("2d", { willReadFrequently: true });
-    if (!ctx) return null;
-    var c = coverUV(img.naturalWidth, img.naturalHeight, N, N, pos.x, pos.y);
+  function paintCover(ctx, img, pos, w, h) {
+    var c = coverUV(img.naturalWidth, img.naturalHeight, w, h, pos.x, pos.y);
+    ctx.drawImage(
+      img,
+      c.u * img.naturalWidth, c.v * img.naturalHeight,
+      c.sx * img.naturalWidth, c.sy * img.naturalHeight,
+      0, 0, w, h
+    );
+  }
+
+  function extractInk(img, pos, size) {
+    var src = document.createElement("canvas");
+    src.width = size;
+    src.height = size;
+    var sctx = src.getContext("2d", { willReadFrequently: true });
+    if (!sctx) return null;
     try {
-      ctx.drawImage(
-        img,
-        c.u * img.naturalWidth, c.v * img.naturalHeight,
-        c.sx * img.naturalWidth, c.sy * img.naturalHeight,
-        0, 0, N, N
-      );
-      var data = ctx.getImageData(0, 0, N, N).data;
+      paintCover(sctx, img, pos, size, size);
+      var data = sctx.getImageData(0, 0, size, size);
     } catch (err) {
       return null;
     }
-    var h = new Float32Array(N * N);
+    var px = data.data;
     var i;
-    for (i = 0; i < N * N; i++) {
-      var o = i * 4;
-      var lum = (data[o] * 0.299 + data[o + 1] * 0.587 + data[o + 2] * 0.114) / 255;
+    for (i = 0; i < px.length; i += 4) {
+      var lum = (px[i] * 0.299 + px[i + 1] * 0.587 + px[i + 2] * 0.114) / 255;
       var ink = 1 - lum;
-      if (ink < 0.12) ink = 0;
-      else ink = (ink - 0.12) / 0.88;
-      h[i] = ink * ink * (3 - 2 * ink);
-    }
-    return h;
-  }
-
-  function liveWarp(wrap, img, canvas) {
-    if (!wrap || !img || !canvas || !img.naturalWidth) return false;
-    var ctx = canvas.getContext("2d");
-    if (!ctx) return false;
-    var pos = parsePos(img);
-    var N = 32;
-    var heights = sampleHeights(img, pos, N);
-    if (!heights) return false;
-
-    var cells = [];
-    var i, j;
-    for (j = 0; j < N; j++) {
-      for (i = 0; i < N; i++) {
-        var ht = heights[j * N + i];
-        if (ht > 0.05) cells.push({ i: i, j: j, ht: ht });
+      if (ink < 0.18) {
+        px[i + 3] = 0;
+      } else {
+        var a = Math.min(255, Math.floor(((ink - 0.18) / 0.82) * 255));
+        px[i + 3] = a;
       }
     }
-    cells.sort(function (a, b) { return a.ht - b.ht; });
-    if (!cells.length) return false;
-
-    wrap.classList.add("is-live");
-
-    function draw() {
-      var w = canvas.clientWidth || wrap.clientWidth;
-      var h = canvas.clientHeight || wrap.clientHeight;
-      if (w < 8 || h < 8) {
-        requestAnimationFrame(draw);
-        return;
-      }
-      if (canvas.width !== w) canvas.width = w;
-      if (canvas.height !== h) canvas.height = h;
-
-      var cov = coverUV(img.naturalWidth, img.naturalHeight, w, h, pos.x, pos.y);
-      var sx0 = cov.u * img.naturalWidth;
-      var sy0 = cov.v * img.naturalHeight;
-      var sw = cov.sx * img.naturalWidth;
-      var sh = cov.sy * img.naturalHeight;
-
-      ctx.clearRect(0, 0, w, h);
-      ctx.drawImage(img, sx0, sy0, sw, sh, 0, 0, w, h);
-
-      var cw = w / N;
-      var ch = h / N;
-      var mx = mouse.x;
-      var my = mouse.y;
-      var k;
-      for (k = 0; k < cells.length; k++) {
-        var c = cells[k];
-        var lift = c.ht;
-        var dx = (mx - (c.i + 0.5) / N) * lift * w * 0.22;
-        var dy = (my - (c.j + 0.5) / N) * lift * h * 0.22;
-        var dw = cw * (1 + lift * 1.35);
-        var dh = ch * (1 + lift * 1.35);
-        var x = c.i * cw - (dw - cw) / 2 + dx;
-        var y = c.j * ch - (dh - ch) / 2 + dy;
-        ctx.drawImage(
-          img,
-          sx0 + (c.i / N) * sw,
-          sy0 + (c.j / N) * sh,
-          sw / N + 0.5,
-          sh / N + 0.5,
-          x, y, dw, dh
-        );
-      }
-      requestAnimationFrame(draw);
-    }
-    draw();
-    return true;
+    sctx.putImageData(data, 0, 0);
+    return src;
   }
 
   function bindRelief(wrap, img, canvas) {
     if (!wrap || !img || !canvas) return;
     function start() {
-      liveWarp(wrap, img, canvas);
+      if (!img.naturalWidth) return;
+      var ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      var pos = parsePos(img);
+      var ink = extractInk(img, pos, 640);
+      if (!ink) return;
+
+      var local = { x: 0.52, y: 0.42, tx: 0.52, ty: 0.42, inside: false };
+      wrap.classList.add("is-live");
+
+      function onMove(e) {
+        var r = wrap.getBoundingClientRect();
+        if (!r.width || !r.height) return;
+        local.tx = (e.clientX - r.left) / r.width;
+        local.ty = (e.clientY - r.top) / r.height;
+        local.inside = true;
+      }
+      function onLeave() {
+        local.inside = false;
+        local.tx = 0.5;
+        local.ty = 0.42;
+      }
+      wrap.addEventListener("pointermove", onMove, { passive: true });
+      wrap.addEventListener("pointerenter", onMove, { passive: true });
+      wrap.addEventListener("pointerleave", onLeave);
+
+      var t0 = performance.now();
+      function draw(now) {
+        local.x += (local.tx - local.x) * 0.18;
+        local.y += (local.ty - local.y) * 0.18;
+
+        var w = canvas.clientWidth || wrap.clientWidth;
+        var h = canvas.clientHeight || wrap.clientHeight;
+        if (w >= 8 && h >= 8) {
+          if (canvas.width !== w) canvas.width = w;
+          if (canvas.height !== h) canvas.height = h;
+
+          var breath = 0.08 * Math.sin((now - t0) / 420);
+          var lift = (local.inside ? 0.16 : 0.07) + breath;
+          var ox = (local.x - 0.5) * w * lift * 1.15;
+          var oy = (local.y - 0.5) * h * lift * 1.15;
+          var cx = local.x * w;
+          var cy = local.y * h;
+          var scale = 1 + lift;
+
+          ctx.clearRect(0, 0, w, h);
+          paintCover(ctx, img, pos, w, h);
+
+          ctx.save();
+          ctx.filter = "blur(" + Math.round(10 + lift * 28) + "px)";
+          ctx.globalAlpha = 0.38 + lift * 0.35;
+          ctx.translate(ox * 1.4, oy * 1.4 + 10 + lift * 18);
+          ctx.drawImage(ink, 0, 0, w, h);
+          ctx.restore();
+
+          ctx.save();
+          ctx.translate(cx + ox, cy + oy);
+          ctx.scale(scale, scale);
+          ctx.translate(-cx, -cy);
+          ctx.imageSmoothingEnabled = true;
+          ctx.drawImage(ink, 0, 0, w, h);
+          ctx.restore();
+        }
+        requestAnimationFrame(draw);
+      }
+      requestAnimationFrame(draw);
     }
     if (img.complete && img.naturalWidth) start();
     else img.addEventListener("load", start, { once: true });
