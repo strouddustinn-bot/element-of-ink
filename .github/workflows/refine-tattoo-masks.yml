@@ -1,0 +1,57 @@
+name: Refine tattoo masks
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "scripts/build_roi_guidance.py"
+      - "scripts/refine_tattoo_masks.py"
+      - ".github/workflows/refine-tattoo-masks.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  refine:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Install mask-processing dependencies
+        run: python -m pip install --disable-pip-version-check numpy pillow opencv-python-headless
+      - name: Rebuild ROI guidance
+        run: python scripts/build_roi_guidance.py
+      - name: Generate refined masks and wire gallery
+        run: python scripts/refine_tattoo_masks.py
+      - name: Validate generated files
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(find assets/masks -maxdepth 1 -type f -name 'tattoo-*.mask.png' | wc -l)" -eq 13
+          grep -q 'src="assets/tattoo-18.jpg".*data-no-ink="1"' index.html
+          ! grep -q 'src="assets/tattoo-18.jpg".*data-ink-mask=' index.html
+          git diff --check
+      - name: Upload visual QA artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: tattoo-mask-qa
+          path: qa/tattoo-mask-batch/
+          if-no-files-found: error
+          retention-days: 14
+      - name: Commit generated production masks
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add assets/masks index.html
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Generate refined tattoo masks from ROI guidance"
+          git push
