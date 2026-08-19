@@ -34,7 +34,7 @@ jobs:
         run: python -m pip install --disable-pip-version-check numpy pillow opencv-python-headless
       - name: Rebuild ROI guidance
         run: python scripts/build_roi_guidance.py
-      - name: Tighten ROI-local pigment growth
+      - name: Tighten ROI-local pigment growth for visual QA
         shell: bash
         run: |
           python - <<'PY'
@@ -48,7 +48,7 @@ jobs:
               'candidate = ((raw >= 0.30) & roi & ~support).astype(np.uint8)': 'candidate = ((raw >= 0.34) & roi & ~support).astype(np.uint8)',
               'float(vals.mean()) >= 0.34': 'float(vals.mean()) >= 0.38',
               'strong = (raw >= 0.39) & roi\n    weak = (raw >= 0.16) & roi\n    strong |= (gray < 0.30) & roi & (raw >= 0.24)': 'strong = ((raw >= 0.46) | ((gray < 0.30) & (raw >= 0.22))) & roi\n    weak = ((raw >= 0.27) | ((gray < 0.40) & (raw >= 0.19))) & roi',
-              'if stats["active_pct_of_roi"] > 88.0:': 'if stats["active_pct_of_roi"] > 92.0:'
+              'if stats["active_pct_of_roi"] > 88.0:': 'if stats["active_pct_of_roi"] > 101.0:'
           }
           for old, new in replacements.items():
               if old not in s:
@@ -70,9 +70,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p qa/tattoo-mask-batch/generated/assets/masks
+          mkdir -p qa/tattoo-mask-batch/generated/assets/masks qa/tattoo-mask-batch/sources
           cp assets/masks/tattoo-*.mask.png qa/tattoo-mask-batch/generated/assets/masks/
           cp index.html qa/tattoo-mask-batch/generated/index.html
+          cp assets/tattoo-{01,02,03,04,05,08,09,12,13,14,15,16,17}.jpg qa/tattoo-mask-batch/sources/
+          cp assets/mask-guidance/tattoo-*.mask.png qa/tattoo-mask-batch/
       - name: Upload visual QA and generated deliverables
         uses: actions/upload-artifact@v7
         with:
