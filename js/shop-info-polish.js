@@ -46,12 +46,17 @@
     });
   }
 
-  /* Replace the temporary vector flash drawings with real tattoo reference photography. */
-  var catalogue = document.createElement("script");
-  catalogue.src = "js/catalogue-photo-upgrade.js";
-  catalogue.async = false;
-  catalogue.onerror = function () {
-    console.error("Element of Ink real-photo catalogue upgrade failed to load");
-  };
-  document.head.appendChild(catalogue);
+  function loadOptional(src, errorLabel) {
+    var script = document.createElement("script");
+    script.src = src;
+    script.async = false;
+    script.onerror = function () { console.error(errorLabel); };
+    document.head.appendChild(script);
+  }
+
+  /* Replace temporary vector drawings with real tattoo reference photography. */
+  loadOptional("js/catalogue-photo-upgrade.js", "Element of Ink real-photo catalogue upgrade failed to load");
+
+  /* Put verified contact details up top and repeat them in the footer; unknown facts stay explicit placeholders. */
+  loadOptional("js/contact-banner.js", "Element of Ink contact banner failed to load");
 })();
