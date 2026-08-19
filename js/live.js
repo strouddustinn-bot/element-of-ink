@@ -76,7 +76,13 @@
     })();
   }
 
-  loadScript("js/schema.js")
+  loadScript("js/meta-copy.js")
+    .catch(function (err) {
+      console.error("Element of Ink metadata copy failed to load", err);
+    })
+    .then(function () {
+      return loadScript("js/schema.js");
+    })
     .catch(function (err) {
       console.error("Element of Ink structured data failed to load", err);
     })
@@ -91,6 +97,12 @@
     })
     .catch(function (err) {
       console.error("Element of Ink shop info failed to load", err);
+    })
+    .then(function () {
+      return loadScript("js/glyph-fix.js");
+    })
+    .catch(function (err) {
+      console.error("Element of Ink display glyph fix failed to load", err);
     })
     .then(function () {
       return loadScript("js/hero-reel.js");
