@@ -51,6 +51,11 @@
   font-family: 'Cormorant Garamond', Georgia, serif;
 }
 
+.premium-eoi .artist-copy .artist-heart {
+  margin-top: 20px;
+  color: rgba(241,229,211,.82);
+}
+
 @media (max-width: 699px) {
   .premium-eoi h1 {
     letter-spacing: 0;
