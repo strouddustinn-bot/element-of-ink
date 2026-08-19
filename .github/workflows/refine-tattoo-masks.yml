@@ -8,6 +8,14 @@ on:
       - "scripts/build_roi_guidance.py"
       - "scripts/refine_tattoo_masks.py"
       - ".github/workflows/refine-tattoo-masks.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "scripts/build_roi_guidance.py"
+      - "scripts/refine_tattoo_masks.py"
+      - ".github/workflows/refine-tattoo-masks.yml"
+      - "qa-trigger.txt"
 
 permissions:
   contents: write
@@ -16,7 +24,7 @@ jobs:
   refine:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out main
+      - name: Check out revision
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
@@ -38,7 +46,14 @@ jobs:
           grep -q 'src="assets/tattoo-18.jpg".*data-no-ink="1"' index.html
           ! grep -q 'src="assets/tattoo-18.jpg".*data-ink-mask=' index.html
           git diff --check
-      - name: Upload visual QA artifact
+      - name: Stage generated deliverables for artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p qa/tattoo-mask-batch/generated/assets/masks
+          cp assets/masks/tattoo-*.mask.png qa/tattoo-mask-batch/generated/assets/masks/
+          cp index.html qa/tattoo-mask-batch/generated/index.html
+      - name: Upload visual QA and generated deliverables
         uses: actions/upload-artifact@v7
         with:
           name: tattoo-mask-qa
@@ -46,6 +61,7 @@ jobs:
           if-no-files-found: error
           retention-days: 14
       - name: Commit generated production masks
+        if: github.event_name == 'push'
         shell: bash
         run: |
           set -euo pipefail
