@@ -81,6 +81,12 @@
       console.error("Element of Ink premium layout failed to load", err);
     })
     .then(function () {
+      return loadScript("js/atmosphere.js");
+    })
+    .catch(function (err) {
+      console.error("Element of Ink atmosphere failed to load", err);
+    })
+    .then(function () {
       magnetize(document.querySelector(".nav-cta"));
       magnetize(document.querySelector(".big-book"));
       magnetize(document.querySelector(".easy button"));
