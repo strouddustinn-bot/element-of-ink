@@ -3,6 +3,16 @@
   var fine = window.matchMedia("(pointer: fine)").matches;
   var debug = /(?:\?|&)inkDebug=1(?:&|$)/.test(location.search);
 
+  function loadScript(src) {
+    return new Promise(function (resolve, reject) {
+      var s = document.createElement("script");
+      s.src = src;
+      s.onload = resolve;
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+
   function magnetize(el) {
     if (!el || !fine || reduce) return;
     el.addEventListener("pointermove", function (e) {
@@ -13,10 +23,6 @@
     });
     el.addEventListener("pointerleave", function () { el.style.transform = ""; });
   }
-
-  magnetize(document.querySelector(".nav-cta"));
-  magnetize(document.querySelector(".big-book"));
-  magnetize(document.querySelector(".easy button"));
 
   function installTattooCursor() {
     var oldOrb = document.getElementById("orb");
@@ -70,26 +76,26 @@
     })();
   }
 
-  installTattooCursor();
-  if (reduce || !fine) return;
-
-  function loadScript(src) {
-    return new Promise(function (resolve, reject) {
-      var s = document.createElement("script");
-      s.src = src;
-      s.onload = resolve;
-      s.onerror = reject;
-      document.head.appendChild(s);
-    });
-  }
-
-  loadScript("js/ink-mask.js")
-    .then(function () { return loadScript("js/ink-organic.js"); })
-    .then(function () { return loadScript("js/ink-render.js"); })
+  loadScript("js/premium-layout.js")
+    .catch(function (err) {
+      console.error("Element of Ink premium layout failed to load", err);
+    })
     .then(function () {
-      if (window.EOIOrganicInk && window.EOIOrganicInk.start) {
-        window.EOIOrganicInk.start({ debug: debug });
-      }
+      magnetize(document.querySelector(".nav-cta"));
+      magnetize(document.querySelector(".big-book"));
+      magnetize(document.querySelector(".easy button"));
+      installTattooCursor();
+
+      if (reduce || !fine) return null;
+
+      return loadScript("js/ink-mask.js")
+        .then(function () { return loadScript("js/ink-organic.js"); })
+        .then(function () { return loadScript("js/ink-render.js"); })
+        .then(function () {
+          if (window.EOIOrganicInk && window.EOIOrganicInk.start) {
+            window.EOIOrganicInk.start({ debug: debug });
+          }
+        });
     })
     .catch(function (err) {
       console.error("Element of Ink interaction failed to load", err);
