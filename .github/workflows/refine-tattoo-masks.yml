@@ -1,16 +1,8 @@
 name: Refine tattoo masks
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "scripts/build_roi_guidance.py"
-      - "scripts/refine_tattoo_masks.py"
-      - ".github/workflows/refine-tattoo-masks.yml"
   pull_request:
-    branches:
-      - main
+    branches: [main]
     paths:
       - "scripts/build_roi_guidance.py"
       - "scripts/refine_tattoo_masks.py"
@@ -24,44 +16,38 @@ jobs:
   refine:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out revision
+      - name: Check out PR head
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
+          ref: ${{ github.head_ref }}
       - name: Set up Python
         uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - name: Install mask-processing dependencies
         run: python -m pip install --disable-pip-version-check numpy pillow opencv-python-headless
-      - name: Rebuild ROI guidance
+      - name: Rebuild human ROI guidance
         run: python scripts/build_roi_guidance.py
       - name: Generate refined masks and wire gallery
         run: python scripts/refine_tattoo_masks.py
-      - name: Validate generated files
+      - name: Validate production output
         shell: bash
         run: |
           set -euo pipefail
           test "$(find assets/masks -maxdepth 1 -type f -name 'tattoo-*.mask.png' | wc -l)" -eq 13
+          test "$(grep -o 'data-ink-mask="assets/masks/tattoo-[0-9][0-9]\.mask\.png"' index.html | wc -l)" -eq 13
           grep -q 'src="assets/tattoo-18.jpg".*data-no-ink="1"' index.html
           ! grep -q 'src="assets/tattoo-18.jpg".*data-ink-mask=' index.html
           git diff --check
-      - name: Stage generated deliverables for artifact
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p qa/tattoo-mask-batch/generated/assets/masks
-          cp assets/masks/tattoo-*.mask.png qa/tattoo-mask-batch/generated/assets/masks/
-          cp index.html qa/tattoo-mask-batch/generated/index.html
-      - name: Upload visual QA and generated deliverables
+      - name: Upload visual QA
         uses: actions/upload-artifact@v7
         with:
-          name: tattoo-mask-qa
+          name: tattoo-mask-qa-final
           path: qa/tattoo-mask-batch/
           if-no-files-found: error
           retention-days: 14
-      - name: Commit generated production masks
-        if: github.event_name == 'push'
+      - name: Commit generated masks to PR branch
         shell: bash
         run: |
           set -euo pipefail
@@ -69,5 +55,5 @@ jobs:
           if git diff --cached --quiet; then exit 0; fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "Generate refined tattoo masks from ROI guidance"
-          git push
+          git commit -m "Generate production tattoo masks from guided ROIs"
+          git push origin HEAD:${{ github.head_ref }}
