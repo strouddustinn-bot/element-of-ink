@@ -87,6 +87,12 @@
       console.error("Element of Ink premium layout failed to load", err);
     })
     .then(function () {
+      return loadScript("js/hero-reel.js");
+    })
+    .catch(function (err) {
+      console.error("Element of Ink hero media failed to load", err);
+    })
+    .then(function () {
       return loadScript("js/atmosphere.js");
     })
     .then(function () {
