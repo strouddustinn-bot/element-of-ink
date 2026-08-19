@@ -1,0 +1,58 @@
+@import url('https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&display=swap');
+
+/* Element of Ink — blackletter display layer.
+   Keep the gothic face for identity and major headings only; body copy remains readable. */
+.premium-eoi .brand,
+.premium-eoi h1,
+.premium-eoi .editorial-title,
+.premium-eoi #work h2,
+.premium-eoi #skin h2,
+.premium-eoi #book h2,
+.premium-eoi .process-step h3,
+.premium-eoi .shout .ink {
+  font-family: 'UnifrakturCook', 'Old English Text MT', 'Lucida Blackletter', Georgia, serif !important;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.premium-eoi h1 {
+  line-height: .82;
+  letter-spacing: -.018em;
+}
+
+.premium-eoi .editorial-title,
+.premium-eoi #work h2,
+.premium-eoi #skin h2,
+.premium-eoi #book h2 {
+  line-height: .9;
+}
+
+/* Navigation, labels and body copy deliberately stay clean. */
+.premium-eoi .nav-links,
+.premium-eoi .nav-cta,
+.premium-eoi .section-index,
+.premium-eoi .signature-item,
+.premium-eoi .work-caption,
+.premium-eoi .artist-note,
+.premium-eoi .process-step b,
+.premium-eoi button,
+.premium-eoi input,
+.premium-eoi textarea,
+.premium-eoi label {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.premium-eoi .lede,
+.premium-eoi .editorial-copy,
+.premium-eoi .kicker,
+.premium-eoi .process-step p,
+.premium-eoi .hero-rail strong,
+.premium-eoi .verse {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+}
+
+@media (max-width: 699px) {
+  .premium-eoi h1 {
+    letter-spacing: 0;
+  }
+}
