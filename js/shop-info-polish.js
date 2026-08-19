@@ -27,23 +27,31 @@
 
   if (!("IntersectionObserver" in window) || reduce) {
     nodes.forEach(function (node) { node.classList.add("is-visible"); });
-    return;
+  } else {
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("is-visible");
+        observer.unobserve(entry.target);
+      });
+    }, { rootMargin: "0px 0px -6% 0px", threshold: 0.06 });
+
+    nodes.forEach(function (node) {
+      var rect = node.getBoundingClientRect();
+      if (rect.top < window.innerHeight * 0.96 && rect.bottom > 0) {
+        node.classList.add("is-visible");
+      } else {
+        observer.observe(node);
+      }
+    });
   }
 
-  var observer = new IntersectionObserver(function (entries) {
-    entries.forEach(function (entry) {
-      if (!entry.isIntersecting) return;
-      entry.target.classList.add("is-visible");
-      observer.unobserve(entry.target);
-    });
-  }, { rootMargin: "0px 0px -6% 0px", threshold: 0.06 });
-
-  nodes.forEach(function (node) {
-    var rect = node.getBoundingClientRect();
-    if (rect.top < window.innerHeight * 0.96 && rect.bottom > 0) {
-      node.classList.add("is-visible");
-    } else {
-      observer.observe(node);
-    }
-  });
+  /* Replace the temporary vector flash drawings with real tattoo reference photography. */
+  var catalogue = document.createElement("script");
+  catalogue.src = "js/catalogue-photo-upgrade.js";
+  catalogue.async = false;
+  catalogue.onerror = function () {
+    console.error("Element of Ink real-photo catalogue upgrade failed to load");
+  };
+  document.head.appendChild(catalogue);
 })();
