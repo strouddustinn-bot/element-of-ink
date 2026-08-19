@@ -1,0 +1,48 @@
+/* Element of Ink — deliberate gallery finish.
+   Preserve the asymmetric editorial grid, but make the gallery land cleanly at each breakpoint. */
+
+.premium-eoi #work {
+  padding-bottom: clamp(112px, 11vw, 178px);
+}
+
+.premium-eoi #work::after {
+  content: "";
+  display: block;
+  width: min(100%, var(--eoi-max));
+  height: 1px;
+  margin: clamp(58px, 7vw, 104px) auto 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(212,173,100,.38) 18%, rgba(241,229,211,.16) 50%, rgba(212,173,100,.38) 82%, transparent 100%);
+}
+
+/* Desktop: close the 12-column composition with a matched 6/6 pair. */
+@media (min-width: 1051px) {
+  .premium-eoi .mosaic .panel:nth-child(12),
+  .premium-eoi .mosaic .panel:nth-child(13) {
+    grid-column: span 6;
+    aspect-ratio: 5 / 4;
+  }
+}
+
+/* Tablet already resolves to two 6-column cards; make the final pair feel intentional rather than tall. */
+@media (min-width: 761px) and (max-width: 1050px) {
+  .premium-eoi .mosaic .panel:nth-child(12),
+  .premium-eoi .mosaic .panel:nth-child(13) {
+    aspect-ratio: 5 / 4;
+  }
+}
+
+/* Mobile: preserve source order and avoid the full-width seventh feature leaving a stray half-row before it. */
+@media (max-width: 760px) {
+  .premium-eoi .mosaic {
+    grid-auto-flow: row;
+  }
+
+  .premium-eoi .mosaic .panel:nth-child(6) {
+    grid-column: 1 / -1;
+    aspect-ratio: 4 / 3;
+  }
+
+  .premium-eoi #work::after {
+    margin-top: 48px;
+  }
+}
