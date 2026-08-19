@@ -76,7 +76,13 @@
     })();
   }
 
-  loadScript("js/premium-layout.js")
+  loadScript("js/schema.js")
+    .catch(function (err) {
+      console.error("Element of Ink structured data failed to load", err);
+    })
+    .then(function () {
+      return loadScript("js/premium-layout.js");
+    })
     .catch(function (err) {
       console.error("Element of Ink premium layout failed to load", err);
     })
