@@ -83,6 +83,14 @@
     .then(function () {
       return loadScript("js/atmosphere.js");
     })
+    .then(function () {
+      var shout = document.querySelector(".premium-eoi main > .shout:not([hidden])");
+      if (shout) {
+        shout.style.position = "relative";
+        shout.style.overflow = "hidden";
+        shout.style.isolation = "isolate";
+      }
+    })
     .catch(function (err) {
       console.error("Element of Ink atmosphere failed to load", err);
     })
