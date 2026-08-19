@@ -64,7 +64,7 @@
       x = e.clientX;
       y = e.clientY;
       cursor.style.opacity = "1";
-      var hot = e.target.closest("a, button, .panel, .pigskin, input, textarea, label");
+      var hot = e.target.closest("a, button, .panel, .pigskin, input, textarea, label, .flash-book");
       cursor.classList.toggle("is-hot", !!hot);
       cursor.classList.toggle("is-ink", !!e.target.closest(".panel, .pigskin"));
     }, { passive: true });
@@ -85,6 +85,12 @@
     })
     .catch(function (err) {
       console.error("Element of Ink premium layout failed to load", err);
+    })
+    .then(function () {
+      return loadScript("js/shop-info.js");
+    })
+    .catch(function (err) {
+      console.error("Element of Ink shop info failed to load", err);
     })
     .then(function () {
       return loadScript("js/hero-reel.js");
@@ -110,6 +116,8 @@
       magnetize(document.querySelector(".nav-cta"));
       magnetize(document.querySelector(".big-book"));
       magnetize(document.querySelector(".easy button"));
+      magnetize(document.querySelector("#flash-prev"));
+      magnetize(document.querySelector("#flash-next"));
       installTattooCursor();
 
       if (reduce || !fine) return null;
