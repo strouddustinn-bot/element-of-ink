@@ -3,183 +3,244 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#160b10" />
-  <title>Proposal — Element of Ink</title>
+  <meta name="theme-color" content="#090607" />
+  <meta name="description" content="Private website proposal for Amanda and Element of Ink." />
+  <title>Private Proposal — Element of Ink</title>
   <style>
-    @font-face {
-      font-family: Needlehide;
-      src: url("fonts/Needlehide-Regular.ttf") format("truetype");
-      font-weight: 400;
-      font-style: normal;
-      font-display: swap;
-    }
-    @font-face {
-      font-family: "Cormorant Garamond";
-      src: url("fonts/CormorantGaramond-Italic.ttf") format("truetype");
-      font-weight: 400;
-      font-style: italic;
-      font-display: swap;
-    }
+    @font-face { font-family: Needlehide; src: url("fonts/Needlehide-Regular.ttf") format("truetype"); font-display: swap; }
+    @font-face { font-family: "Cormorant Garamond"; src: url("fonts/CormorantGaramond-Regular.ttf") format("truetype"); font-display: swap; }
+    @font-face { font-family: "Cormorant Garamond"; src: url("fonts/CormorantGaramond-Italic.ttf") format("truetype"); font-style: italic; font-display: swap; }
     :root {
-      --void: #160b10;
-      --bone: #f3e6d2;
-      --dust: #c4a48a;
-      --gold: #e0b45a;
-      --line: rgba(224,180,90,.22);
+      --black:#090607; --ink:#120a0d; --panel:#180e11; --bone:#f1e5d3; --muted:#ad9582;
+      --gold:#d4ad64; --blood:#801b29; --line:rgba(212,173,100,.24); --soft:rgba(241,229,211,.10); --max:1120px;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    html { background:var(--black); scroll-behavior:smooth; }
     body {
-      background: linear-gradient(180deg, #1c0d12, #160b10 40%, #0f070a);
-      color: var(--bone);
-      font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Times New Roman", serif;
-      line-height: 1.6;
+      min-height:100vh; color:var(--bone);
+      background:radial-gradient(1000px 620px at 95% -8%,rgba(128,27,41,.18),transparent 64%),linear-gradient(180deg,#0d080a 0%,#090607 100%);
+      font-family:"Cormorant Garamond",Georgia,serif; line-height:1.55;
     }
-    .wrap { width: min(820px, calc(100% - 40px)); margin: 0 auto; padding: 56px 0 80px; }
-    .brand { font-family: Needlehide, serif; font-size: 34px; }
-    .eyebrow { color: var(--gold); letter-spacing: .28em; text-transform: uppercase; font-size: 11px; margin: 10px 0 28px; }
-    h1 {
-      font-family: Needlehide, serif;
-      font-size: clamp(34px, 6vw, 56px);
-      line-height: 1.05;
-      margin-bottom: 16px;
-      font-weight: 400;
+    body::before {
+      content:""; position:fixed; inset:0; pointer-events:none; opacity:.035;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.8'/%3E%3C/svg%3E"); mix-blend-mode:soft-light;
     }
-    h2 { font-family: Needlehide, serif; font-size: 28px; margin: 36px 0 12px; color: var(--gold); font-weight: 400; }
-    p, li { color: #ead9c4; }
-    .lede {
-      font-family: "Cormorant Garamond", Georgia, serif;
-      font-size: 22px; font-style: italic; color: var(--dust); margin-bottom: 28px;
+    a { color:inherit; text-underline-offset:3px; }
+    .page { width:min(var(--max),calc(100% - 40px)); margin:0 auto; padding:40px 0 88px; }
+    .topline { display:flex; justify-content:space-between; align-items:center; gap:24px; padding-bottom:22px; border-bottom:1px solid var(--line); }
+    .brand { font-family:Needlehide,serif; font-size:clamp(26px,3vw,38px); line-height:.9; }
+    .private,.eyebrow,.section-index { color:var(--gold); font:700 9px/1 Arial,sans-serif; letter-spacing:.32em; text-transform:uppercase; }
+    .private { text-align:right; }
+    .hero { min-height:72vh; display:grid; grid-template-columns:minmax(0,1.35fr) minmax(260px,.65fr); gap:clamp(40px,7vw,96px); align-items:end; padding:clamp(72px,11vw,150px) 0 clamp(66px,9vw,120px); border-bottom:1px solid var(--soft); }
+    h1,h2,h3 { font-family:Needlehide,serif; font-weight:400; }
+    h1 { max-width:8ch; margin:24px 0 28px; font-size:clamp(70px,10.4vw,146px); line-height:.79; letter-spacing:-.035em; }
+    .lede { max-width:34ch; color:rgba(241,229,211,.7); font-size:clamp(20px,2vw,28px); line-height:1.42; }
+    .hero-note { padding:28px 0 6px 26px; border-left:1px solid var(--line); color:rgba(241,229,211,.6); font-size:18px; }
+    .hero-note strong { display:block; margin-bottom:14px; color:var(--bone); font-size:26px; font-style:italic; font-weight:400; line-height:1.2; }
+    section { padding:clamp(72px,9vw,118px) 0; border-bottom:1px solid var(--soft); }
+    .section-head { display:grid; grid-template-columns:1fr minmax(260px,390px); gap:clamp(30px,6vw,80px); align-items:end; margin-bottom:50px; }
+    h2 { max-width:9ch; margin-top:18px; font-size:clamp(48px,7vw,92px); line-height:.86; letter-spacing:-.02em; }
+    .section-copy { color:rgba(241,229,211,.62); font-size:20px; line-height:1.5; }
+    .feature-grid { display:grid; grid-template-columns:repeat(2,1fr); border-top:1px solid var(--line); border-left:1px solid var(--line); }
+    .feature { min-height:225px; padding:30px; border-right:1px solid var(--line); border-bottom:1px solid var(--line); background:rgba(24,14,17,.35); }
+    .feature b,.addon b { color:var(--gold); font:700 9px/1 Arial,sans-serif; letter-spacing:.26em; text-transform:uppercase; }
+    .feature h3 { margin:44px 0 12px; font-size:clamp(30px,3.6vw,48px); line-height:.92; }
+    .feature p { max-width:39ch; color:rgba(241,229,211,.60); font-size:18px; }
+    .current-note { margin-top:24px; color:rgba(241,229,211,.48); font-size:15px; }
+    .price-section { background:var(--bone); color:#160d0f; margin-left:calc((100vw - min(var(--max),calc(100vw - 40px))) / -2); margin-right:calc((100vw - min(var(--max),calc(100vw - 40px))) / -2); padding-left:max(20px,calc((100vw - var(--max)) / 2)); padding-right:max(20px,calc((100vw - var(--max)) / 2)); }
+    .price-section .section-index { color:var(--blood); }
+    .price-section h2 { color:#160d0f; }
+    .price-section .section-copy { color:rgba(22,13,15,.64); }
+    .pricing { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:rgba(22,13,15,.18); border:1px solid rgba(22,13,15,.18); }
+    .price-card { background:#f1e5d3; padding:34px; min-height:270px; }
+    .price-card.featured { background:#160d0f; color:var(--bone); }
+    .price-card .label { font:700 9px/1 Arial,sans-serif; letter-spacing:.27em; text-transform:uppercase; color:var(--blood); }
+    .price-card.featured .label { color:var(--gold); }
+    .price-card .amount { margin:36px 0 16px; font-family:Needlehide,serif; font-size:clamp(52px,7vw,88px); line-height:.82; }
+    .price-card p { max-width:34ch; color:rgba(22,13,15,.62); font-size:18px; }
+    .price-card.featured p { color:rgba(241,229,211,.62); }
+    .price-note { margin-top:24px; color:rgba(22,13,15,.56); font-size:15px; }
+    .addon-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
+    .addon { padding:24px; border:1px solid var(--line); background:rgba(24,14,17,.35); }
+    .addon h3 { margin:20px 0 8px; font-size:30px; line-height:.95; }
+    .addon p { color:rgba(241,229,211,.58); font-size:17px; }
+    .addon .range { display:block; margin-top:16px; color:var(--gold); font:700 10px/1 Arial,sans-serif; letter-spacing:.12em; text-transform:uppercase; }
+    .edit-list { columns:2; column-gap:50px; padding-left:1.15em; color:rgba(241,229,211,.66); font-size:18px; }
+    .edit-list li { margin:0 0 12px; break-inside:avoid; }
+    .terms { display:grid; grid-template-columns:repeat(3,1fr); border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+    .term { padding:26px 24px 28px 0; }
+    .term + .term { padding-left:24px; border-left:1px solid var(--line); }
+    .term strong { display:block; margin-bottom:8px; color:var(--gold); font:700 9px/1 Arial,sans-serif; letter-spacing:.24em; text-transform:uppercase; }
+    .term p { color:rgba(241,229,211,.58); font-size:17px; }
+    .close { text-align:center; padding-bottom:40px; }
+    .close h2 { max-width:none; margin:20px auto 28px; }
+    .close p { max-width:48ch; margin:0 auto 28px; color:rgba(241,229,211,.62); font-size:20px; }
+    .preview { display:inline-block; padding:15px 20px; border:1px solid var(--gold); color:var(--bone); text-decoration:none; font:700 9px/1 Arial,sans-serif; letter-spacing:.24em; text-transform:uppercase; }
+    footer { padding-top:36px; display:flex; justify-content:space-between; gap:20px; flex-wrap:wrap; color:rgba(241,229,211,.42); font:700 9px/1.5 Arial,sans-serif; letter-spacing:.18em; text-transform:uppercase; }
+    @media (max-width:760px) {
+      .hero,.section-head,.pricing { grid-template-columns:1fr; }
+      .hero { min-height:auto; }
+      .feature-grid,.addon-grid { grid-template-columns:1fr; }
+      .edit-list { columns:1; }
+      .terms { grid-template-columns:1fr; }
+      .term + .term { border-left:0; border-top:1px solid var(--line); padding-left:0; }
+      .private { max-width:16ch; }
     }
-    .card {
-      border: 1px solid var(--line);
-      background: rgba(42,18,24,.45);
-      padding: 22px 24px;
-      margin: 18px 0;
-    }
-    ul { padding-left: 1.2em; }
-    li { margin: 8px 0; }
-    .price {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 8px 20px;
-      align-items: baseline;
-    }
-    .amt { font-family: "Iowan Old Style", Palatino, "Times New Roman", serif; font-size: 28px; color: var(--gold); letter-spacing: .04em; }
-    .note { font-size: 13px; color: var(--dust); }
-    footer { margin-top: 48px; color: var(--dust); font-size: 13px; letter-spacing: .08em; }
-    .opt { margin: 14px 0; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
-    .opt:last-child { border-bottom: 0; padding-bottom: 0; margin-bottom: 0; }
-    .opt strong { display: block; color: var(--gold); font-size: 17px; margin-bottom: 4px; }
-    .opt p { margin: 0; }
   </style>
 </head>
 <body>
-  <article class="wrap">
-    <div class="brand">Element of Ink</div>
-    <p class="eyebrow">Private proposal for Amanda</p>
-    <h1>A site worthy of the work.</h1>
-    <p class="lede">People already hunt you down on Instagram. This gives them a place to land, stare, and book you — without drowning in DMs.</p>
+  <article class="page">
+    <header class="topline">
+      <div class="brand">Element of Ink</div>
+      <div class="private">Private proposal · Amanda</div>
+    </header>
 
-    <p>Amanda, your black-and-grey already looks expensive. This is the front door: the work, the dirt under the nails, and a giant Book with Amanda button. No clutter. A parlor site that feels like a shop.</p>
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Website / Digital flagship</p>
+        <h1>A digital home worthy of the shop.</h1>
+        <p class="lede">The goal was never to make Element of Ink look like another tattoo website. It was to make the digital experience carry the same confidence, atmosphere and attention to detail people expect when they walk into a premium studio.</p>
+      </div>
+      <aside class="hero-note">
+        <strong>The site should feel expensive before anyone sees a price.</strong>
+        It now works less like a brochure and more like a piece of the brand: cinematic, tactile, slightly unsettling, and unmistakably built around Amanda's work.
+      </aside>
+    </section>
 
-    <h2>What you get</h2>
-    <div class="card">
-      <ul>
-        <li>A one-page studio site built around your actual tattoos — not stock photos.</li>
-        <li>In-your-face booking: name, email, what they want, Book with Amanda. A first-timer can do it.</li>
-        <li>A custom parlor face and shop talk that matches the work, not a barber-shop template.</li>
-        <li>Your handle and email on the page so Instagram stops being the only door.</li>
-        <li>Room to grow into a real booking system without rebuilding the look.</li>
+    <section>
+      <div class="section-head">
+        <div>
+          <p class="section-index">01 / What is already built</p>
+          <h2>The complete experience.</h2>
+        </div>
+        <p class="section-copy">This is not a template with photos dropped into it. The current build includes custom design, custom motion, custom image-processing logic and responsive behavior built specifically around Element of Ink.</p>
+      </div>
+
+      <div class="feature-grid">
+        <article class="feature"><b>Art direction</b><h3>Premium editorial layout</h3><p>Cinematic composition, asymmetric spacing, restrained gold detailing, custom typography, deliberate negative space and a portfolio hierarchy designed to make the work feel collectible rather than tiled.</p></article>
+        <article class="feature"><b>Hero experience</b><h3>Cinematic first impression</h3><p>Full-screen tattoo video treatment, studio messaging, specialty positioning, booking access and graceful still-image behavior for visitors who prefer reduced motion.</p></article>
+        <article class="feature"><b>Artist story</b><h3>Dedicated Amanda feature</h3><p>A standalone editorial artist section using Amanda's throne portrait, specialties and positioning instead of burying the artist inside the gallery.</p></article>
+        <article class="feature"><b>Portfolio</b><h3>Art-directed selected work</h3><p>Responsive gallery composition with deliberately varied image scale, captions, indexing, custom crops and thirteen production tattoo masks built from Amanda's actual photographs.</p></article>
+        <article class="feature"><b>Signature interaction</b><h3>Ink that physically moves</h3><p>A custom tattoo interaction where the image stays still while detected tattoo structures lift, repel from the tattoo-machine cursor, reveal sampled bare skin beneath them, and spring precisely back into place.</p></article>
+        <article class="feature"><b>Image engineering</b><h3>Organic segmentation</h3><p>Ink-derived connected components, irregular fragment growth, skin-tone replacement, fine-line and shading detection, depth, shadow and local interaction instead of generic square-pixel effects.</p></article>
+        <article class="feature"><b>Custom cursor</b><h3>Tattoo machine pointer</h3><p>A purpose-built tattoo-machine cursor with the interaction hotspot aligned near the needle tip and context-sensitive visual behavior over interactive work.</p></article>
+        <article class="feature"><b>Atmosphere</b><h3>Smoke, ink and motion</h3><p>Major headings materialize through drifting smoke and ink blooms while supporting copy resolves more quietly as the visitor scrolls.</p></article>
+        <article class="feature"><b>Narrative detail</b><h3>Subtle skeleton cameo</h3><p>An articulated skeletal figure quietly forms in smoke, stands, takes a few restrained steps and disappears again—designed as a blink-and-you-missed-it studio detail rather than a gimmick.</p></article>
+        <article class="feature"><b>Interactive feature</b><h3>Practice skin</h3><p>An on-site drawing experience lets visitors activate the needle, draw on simulated skin and watch the line hold before fading.</p></article>
+        <article class="feature"><b>Sound / ambience</b><h3>Optional studio audio</h3><p>A visitor-controlled sound system supports the atmosphere without forcing audio playback, with multiple tracks already wired into the experience.</p></article>
+        <article class="feature"><b>Conversion</b><h3>Booking pathway</h3><p>Persistent access to booking, a premium final inquiry section, direct Instagram and email links, and a simple booking request flow that gets the first conversation started.</p></article>
+        <article class="feature"><b>Responsive</b><h3>Desktop to phone</h3><p>The composition changes intentionally across desktop, tablet and mobile rather than merely shrinking. Heavy pointer effects are limited where they do not make sense on touch devices.</p></article>
+        <article class="feature"><b>Accessibility</b><h3>Motion with an off switch</h3><p>Reduced-motion support, keyboard focus states, semantic sections and sensible fallbacks keep the theatrical parts from becoming a usability problem.</p></article>
+        <article class="feature"><b>Discoverability</b><h3>Search-ready foundation</h3><p>Page metadata and structured TattooParlor business markup give search engines clearer information about Element of Ink. A deeper local SEO program can be added later.</p></article>
+        <article class="feature"><b>Performance</b><h3>Built to stay lean</h3><p>Lazy-loaded portfolio imagery, modular JavaScript and effects that initialize only when appropriate keep the site from becoming a giant animation demo disguised as a business website.</p></article>
+      </div>
+      <p class="current-note">Amanda's throne portrait is intentionally excluded from the tattoo-lift interaction. The site treats the artist as the artist, not as another interactive tattoo image.</p>
+    </section>
+
+    <section class="price-section">
+      <div class="section-head">
+        <div>
+          <p class="section-index">02 / Investment</p>
+          <h2>Friend price. Real value.</h2>
+        </div>
+        <p class="section-copy">The point of a friend rate is to make the project easier to say yes to—not to pretend the work is worth less than it is.</p>
+      </div>
+
+      <div class="pricing">
+        <article class="price-card">
+          <span class="label">Comparable replacement value</span>
+          <div class="amount">$12k–$20k+</div>
+          <p>A boutique agency pricing strategy, premium art direction, responsive implementation and this level of bespoke interaction separately could reasonably land in this territory. That is a value reference, not the invoice.</p>
+        </article>
+        <article class="price-card featured">
+          <span class="label">Amanda / friend project price</span>
+          <div class="amount">$4,250 CAD</div>
+          <p>For the current custom website, final production polish, connection to her chosen domain, launch support and handoff. No mandatory monthly retainer.</p>
+        </article>
+      </div>
+      <p class="price-note">Suggested payment structure: 50% to make the project officially hers and complete production launch work, 50% at launch. Domain registration, third-party software subscriptions, payment-processing fees and paid advertising are separate only if she chooses to use them.</p>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <div>
+          <p class="section-index">03 / Easy edits</p>
+          <h2>Things we can change.</h2>
+        </div>
+        <p class="section-copy">The existing design is a strong direction, not a prison. These are normal refinement items we can tune around Amanda and the actual shop before launch.</p>
+      </div>
+      <ul class="edit-list">
+        <li>Rewrite any headline, tagline, bio or booking language.</li>
+        <li>Change the hero video or hero still image.</li>
+        <li>Reorder, remove or add portfolio pieces.</li>
+        <li>Adjust individual tattoo crops and focal points.</li>
+        <li>Increase or reduce the tattoo-lift intensity.</li>
+        <li>Change how close the cursor must get before ink reacts.</li>
+        <li>Make smoke reveals heavier, lighter, faster or slower.</li>
+        <li>Make the skeleton easier or harder to notice—or remove it entirely.</li>
+        <li>Change colours, gold warmth, background depth or typography scale.</li>
+        <li>Replace or remove music and ambient audio.</li>
+        <li>Change booking questions and inquiry wording.</li>
+        <li>Add the shop address, hours, phone number and walk-in policy.</li>
+        <li>Change Instagram, email, domain and contact destinations.</li>
+        <li>Add artist credentials, specialties or a fuller personal story.</li>
+        <li>Change the practice-skin experience or remove it.</li>
+        <li>Tune mobile spacing, crops and section order independently from desktop.</li>
       </ul>
-    </div>
+    </section>
 
-    <h2>The schema backend</h2>
-    <p>A schema is just a strict list of fields: name, email, piece, placement, size, date. The backend is the locked drawer that stores those fields instead of a pile of Instagram DMs.</p>
-    <div class="card">
-      <ul>
-        <li>Every inquiry lands as a clean card you can sort — not a screenshot of a chat.</li>
-        <li>You stop losing people who messaged, got buried, and booked someone else.</li>
-        <li>Google can read a LocalBusiness schema and treat Element of Ink like a real parlor — hours, city, booking — so new clients find you outside the algorithm.</li>
-        <li>When you want deposits, waitlists, or this date is taken, the structure is already there. No starting over.</li>
-      </ul>
-    </div>
-    <p>Right now the page is the look. The schema backend is how the parlor actually runs once someone hits the red button.</p>
+    <section>
+      <div class="section-head">
+        <div>
+          <p class="section-index">04 / Optional expansion</p>
+          <h2>What the site can become.</h2>
+        </div>
+        <p class="section-copy">None of this is required to launch. These are clean next layers if the shop wants the website to take over more of the administrative work or generate more revenue.</p>
+      </div>
 
-    <h2>Why this sells the shop</h2>
-    <p>Instagram is a hallway. A site is the shop. Serious clients — cover-ups, sleeves, memorial pieces — want to see a body of work and a grown-up way to book. This makes you look booked, intentional, and expensive in the right way. That is how you raise your floor without raising your voice.</p>
+      <div class="addon-grid">
+        <article class="addon"><b>Booking operations</b><h3>Inquiry dashboard</h3><p>Replace the simple email handoff with a proper stored inquiry system: client, piece, placement, size, reference images, artist, status and notes.</p><span class="range">Friend range · $900–$1,500</span></article>
+        <article class="addon"><b>Payments</b><h3>Online deposits</h3><p>Collect booking deposits securely and connect successful payment back to the inquiry or appointment.</p><span class="range">Friend range · $700–$1,200</span></article>
+        <article class="addon"><b>Scheduling</b><h3>Calendar / waitlist</h3><p>Available dates, consultation requests, waitlist capture or artist-specific availability without exposing more calendar information than the shop wants public.</p><span class="range">Friend range · $500–$900</span></article>
+        <article class="addon"><b>Shop growth</b><h3>Additional artists</h3><p>Dedicated artist profiles with specialties, portfolios and direct booking routes while preserving the same art direction.</p><span class="range">Friend range · $200–$350 / artist</span></article>
+        <article class="addon"><b>Content control</b><h3>Gallery CMS</h3><p>Let Amanda or the shop add, reorder and retire portfolio work without touching code.</p><span class="range">Friend range · $900–$1,800</span></article>
+        <article class="addon"><b>Proof</b><h3>Healed work</h3><p>A dedicated healed-work presentation, including fresh-versus-healed comparisons where suitable.</p><span class="range">Friend range · $250–$500</span></article>
+        <article class="addon"><b>High-value service</b><h3>Cover-up stories</h3><p>Before, process and finished-piece case studies that show exactly why difficult cover-up work belongs with this shop.</p><span class="range">Friend range · $300–$600 / story set</span></article>
+        <article class="addon"><b>Client education</b><h3>Aftercare / FAQ</h3><p>Branded aftercare, policies, age requirements, preparation guidance and answers to repetitive client questions.</p><span class="range">Friend range · $250–$500</span></article>
+        <article class="addon"><b>Local search</b><h3>Maps, hours & local SEO</h3><p>Shop location, map, opening hours, Google Business Profile alignment, local search copy and expanded structured data.</p><span class="range">Friend range · $350–$750</span></article>
+        <article class="addon"><b>Measurement</b><h3>Analytics & conversion tracking</h3><p>Privacy-conscious analytics, booking-event tracking and optional advertising pixels so the shop can see what actually sends clients.</p><span class="range">Friend range · $200–$400</span></article>
+        <article class="addon"><b>Revenue</b><h3>Gift cards / merch</h3><p>Gift certificates, limited apparel, prints or small product drops without turning the entire site into an online store.</p><span class="range">Friend range · $600–$1,500</span></article>
+        <article class="addon"><b>Automation</b><h3>Email follow-up</h3><p>Automatic inquiry receipt, appointment preparation, aftercare delivery and review-request emails when the workflow justifies them.</p><span class="range">Friend range · $400–$900</span></article>
+        <article class="addon"><b>Trust</b><h3>Testimonials / reviews</h3><p>Curated client feedback presented in the same restrained visual language rather than a generic rotating review widget.</p><span class="range">Friend range · $200–$400</span></article>
+        <article class="addon"><b>Ongoing care</b><h3>Site maintenance</h3><p>Minor image swaps, copy changes, monitoring and small fixes without putting Amanda on a large agency retainer.</p><span class="range">Optional · $125/mo or ad hoc</span></article>
+      </div>
+    </section>
 
-    <h2>Make it yours</h2>
-    <p>The page you have is the door. If Element of Ink is a house, not a solo chair, we can grow it without tearing the look down. Circle what you want. We do not build all of this unless you say so.</p>
-    <div class="card">
-      <div class="opt">
-        <strong>Meet the artists</strong>
-        <p>A row of house chairs. Photo, name, what they sit — black-and-grey, color, fine line, cover-ups — and a short blurb in their voice. Book with that artist, not a generic inbox. You send the pictures and two or three lines. We do not invent people.</p>
+    <section>
+      <div class="section-head">
+        <div>
+          <p class="section-index">05 / Boundaries</p>
+          <h2>No surprise bullshit.</h2>
+        </div>
+        <p class="section-copy">The proposal should be easy to understand. The website itself is one project. Anything that turns it into a booking platform, store or ongoing marketing operation is separate and only happens if Amanda wants it.</p>
       </div>
-      <div class="opt">
-        <strong>Flash wall</strong>
-        <p>Ready designs with a price or a “this one’s gone.” People book a piece, not a vibe.</p>
+      <div class="terms">
+        <div class="term"><strong>Included</strong><p>Current design and interactions, reasonable final refinements, production deployment, chosen-domain connection and launch handoff.</p></div>
+        <div class="term"><strong>Not forced</strong><p>No required maintenance plan, advertising package, SEO retainer, booking software subscription or long contract.</p></div>
+        <div class="term"><strong>Third parties</strong><p>Domain fees, hosting upgrades, Stripe fees, scheduling platforms or other paid services are passed through only when selected.</p></div>
       </div>
-      <div class="opt">
-        <strong>Aftercare</strong>
-        <p>One page. Wash it. Don’t pick it. When to come back. Cuts the “is this normal” DMs.</p>
-      </div>
-      <div class="opt">
-        <strong>Hours and the door</strong>
-        <p>When you’re open, the city, a map. Google already wants this. Walk-ins vs books, said once, clearly.</p>
-      </div>
-      <div class="opt">
-        <strong>Guest spots</strong>
-        <p>A date, a name, a few shots. Comes down when they leave town. Keeps the site feeling alive.</p>
-      </div>
-      <div class="opt">
-        <strong>Healed work</strong>
-        <p>Fresh next to healed. Serious clients hunt that. It also shuts up the “will this last” crowd.</p>
-      </div>
-      <div class="opt">
-        <strong>Cover-up stories</strong>
-        <p>Before, after, one paragraph. Cover-ups pay. Show you eat them.</p>
-      </div>
-      <div class="opt">
-        <strong>Deposits and books</strong>
-        <p>Hold the date. Waitlist when you’re full. The locked drawer already has the fields. This is the lock on the door.</p>
-      </div>
-      <div class="opt">
-        <strong>Shop rules</strong>
-        <p>Age. Consent. No drunk sits. Said like a parlor, not a lawyer. Saves you the speech at the door.</p>
-      </div>
-      <div class="opt">
-        <strong>Merch</strong>
-        <p>A few shirts, a print, a gift card. Only if you actually sell them. Dead buttons look cheap.</p>
-      </div>
-    </div>
-    <p class="note">Extras get priced when you pick them. Small add, not a rebuild.</p>
+    </section>
 
-    <h2>Fair valuation</h2>
-    <div class="card price">
-      <div>
-        <strong>Look and landing page, as designed</strong>
-        <p class="note">Custom one-page studio site, copy, your work, booking face. What you can show today.</p>
-      </div>
-      <div class="amt">$1,800</div>
-      <div>
-        <strong>Live site plus schema backend</strong>
-        <p class="note">Hosted URL, working Book with Amanda, inquiry inbox, Schema.org parlor markup for Google.</p>
-      </div>
-      <div class="amt">$3,400</div>
-      <div>
-        <strong>Optional care</strong>
-        <p class="note">New pieces, copy tweaks, uptime. Cancel anytime.</p>
-      </div>
-      <div class="amt">$150/mo</div>
-    </div>
-    <p>That is friend-honest, not agency theater. A shop of this caliber usually pays $2,500–$6,000 for a custom one-pager with booking. Twenty thousand is what a downtown studio pays a firm for a full brand system. You do not need that. You need this door, then the drawer behind it.</p>
-
-    <h2>Next</h2>
-    <p>The live look is up at <a href="https://strouddustinn-bot.github.io/element-of-ink/">this preview</a>. If you want it, we put it on your own domain and wire Book with Amanda into a real inbox. If you don't, I take the preview down the same day. Circle anything under Make it yours. You keep tattooing. The site takes the first conversation.</p>
+    <section class="close">
+      <p class="section-index">06 / The point</p>
+      <h2>Make the first impression match the chair.</h2>
+      <p>The work already has the quality. The shop already has the atmosphere. The website's job is to make a stranger feel some of that before they ever walk through the door—and give the right client a clean next step when they decide they want Amanda's work on them.</p>
+      <a class="preview" href="https://strouddustinn-bot.github.io/element-of-ink/">Open the live preview</a>
+    </section>
 
     <footer>
-      Prepared for Amanda · Element of Ink · @SUMDIRTYGINGE<br />
-      elementsofink@gmail.com
+      <span>Prepared privately for Amanda · Element of Ink</span>
+      <span>@SUMDIRTYGINGE · elementsofink@gmail.com</span>
     </footer>
   </article>
 </body>
