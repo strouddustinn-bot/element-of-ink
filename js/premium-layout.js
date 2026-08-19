@@ -7,10 +7,17 @@
   css.href = "css/premium.css";
   css.id = "eoi-premium-css";
   document.head.appendChild(css);
+
+  var brandType = document.createElement("link");
+  brandType.rel = "stylesheet";
+  brandType.href = "css/brand-type.css";
+  brandType.id = "eoi-brand-type-css";
+  document.head.appendChild(brandType);
+
   body.classList.add("premium-eoi");
 
   var openBar = document.querySelector(".open-bar");
-  if (openBar) openBar.textContent = "Black & grey realism · Books open · Element of Ink";
+  if (openBar) openBar.textContent = "Custom tattooing by Amanda Hope Patterson · Books open · Element of Ink";
 
   var nav = document.querySelector("nav");
   var links = document.querySelector(".nav-links");
@@ -35,7 +42,7 @@
     var lede = heroCopy.querySelector(".lede");
     if (h1) h1.textContent = "Element of Ink";
     if (lede) {
-      lede.textContent = "Amanda's black-and-grey realism, sleeves, cover-ups and large sit-down work — built to hold attention long after the session ends.";
+      lede.textContent = "Amanda Hope Patterson makes tattoos people are excited to live in and show off. Black-and-grey realism, sleeves, cover-ups and big custom pieces — drawn around the person who has to wear them.";
     }
   }
 
@@ -43,13 +50,13 @@
     var rail = document.createElement("div");
     rail.className = "hero-rail";
     rail.setAttribute("aria-hidden", "true");
-    rail.innerHTML = "<strong>Black & grey, built with weight.</strong><span>Sleeves · Cover-ups · Large work</span>";
+    rail.innerHTML = "<strong>Made to be worn. Made to be loved.</strong><span>Black & grey · Sleeves · Cover-ups · Big work</span>";
     hero.appendChild(rail);
 
     var scroll = document.createElement("div");
     scroll.className = "hero-scroll";
     scroll.setAttribute("aria-hidden", "true");
-    scroll.textContent = "Scroll to the work";
+    scroll.textContent = "See Amanda's work";
     hero.appendChild(scroll);
 
     var signature = document.createElement("div");
@@ -59,7 +66,7 @@
       '<div class="signature-item"><em>01</em> Black & grey realism</div>' +
       '<div class="signature-item"><em>02</em> Sleeves</div>' +
       '<div class="signature-item"><em>03</em> Cover-ups</div>' +
-      '<div class="signature-item"><em>04</em> Large sit-down work</div>';
+      '<div class="signature-item"><em>04</em> Large custom pieces</div>';
     hero.insertAdjacentElement("afterend", signature);
   }
 
@@ -77,8 +84,8 @@
     var center = work.querySelector(".center");
     var workTitle = work.querySelector("h2");
     var workKicker = work.querySelector(".kicker");
-    if (workTitle) workTitle.textContent = "Selected work";
-    if (workKicker) workKicker.textContent = "Black and grey, narrative sleeves, animals, mythic figures and large pieces. Move the machine across the ink.";
+    if (workTitle) workTitle.textContent = "The work";
+    if (workKicker) workKicker.textContent = "The kind of tattoos people leave the chair checking in every mirror they pass. Move the machine across the ink and take a closer look.";
     if (center) center.classList.add("reveal-premium");
   }
 
@@ -92,11 +99,12 @@
         '<div class="artist-portrait" id="artist-portrait"></div>' +
         '<div class="artist-copy reveal-premium">' +
           '<div class="section-index">02 / THE ARTIST</div>' +
-          '<h2 class="editorial-title" id="artist-title">Amanda.</h2>' +
-          '<p class="editorial-copy">The portfolio moves through black-and-grey realism, portraits, animals, mythic subjects and large connected pieces. The common thread is depth, contrast and work that reads from across the room before it rewards a closer look.</p>' +
+          '<h2 class="editorial-title" id="artist-title">Amanda Hope Patterson.</h2>' +
+          '<p class="editorial-copy">People bring Amanda all kinds of starting points — a rough idea, a memory, an old tattoo they are ready to cover, or a whole sleeve they have been thinking about for years. Her job is to turn that into something that feels right on the body and still feels like theirs when it is finished.</p>' +
+          '<p class="editorial-copy artist-heart">Her work leans into black-and-grey realism, strong contrast, depth and big compositions, but the best part is simpler than that: people are genuinely excited when they see the finished tattoo. That first look matters. The piece has to be something they are proud to walk out wearing.</p>' +
           '<div class="artist-notes">' +
-            '<div class="artist-note"><strong>Focus</strong>Black & grey realism</div>' +
-            '<div class="artist-note"><strong>Projects</strong>Sleeves · Cover-ups · Large work</div>' +
+            '<div class="artist-note"><strong>Her lane</strong>Black & grey realism</div>' +
+            '<div class="artist-note"><strong>Come to her for</strong>Sleeves · Cover-ups · Large custom work</div>' +
           '</div>' +
         '</div>' +
       '</div>';
@@ -131,7 +139,7 @@
       panel.setAttribute("aria-label", labels[index] || "Tattoo work");
       var caption = document.createElement("div");
       caption.className = "work-caption";
-      caption.innerHTML = "<span>" + (labels[index] || "Tattoo work") + "</span><span>Element of Ink</span>";
+      caption.innerHTML = "<span>" + (labels[index] || "Tattoo work") + "</span><span>By Amanda Hope Patterson</span>";
       panel.appendChild(caption);
       panel.classList.add("reveal-premium");
     });
@@ -147,13 +155,13 @@
   process.innerHTML =
     '<div class="process-head reveal-premium">' +
       '<div class="section-index">04 / THE PROCESS</div>' +
-      '<h2 class="editorial-title" id="process-title">Start with the idea.</h2>' +
-      '<p class="editorial-copy">Booking is deliberately simple. Send the concept. Give Amanda enough to understand what you want. The first job is getting the piece into the right conversation.</p>' +
+      '<h2 class="editorial-title" id="process-title">Start with what you want.</h2>' +
+      '<p class="editorial-copy">You do not need to show up with perfect wording or a finished drawing. Tell Amanda what you have in your head, what matters about it, and where you want it to live. That is enough to start.</p>' +
     '</div>' +
     '<div class="process-grid">' +
-      '<article class="process-step reveal-premium"><b>01 / SEND IT</b><h3>Your idea.</h3><p>Name the piece, subject or direction you have in mind. It does not need to arrive as a finished art brief.</p></article>' +
-      '<article class="process-step reveal-premium"><b>02 / SHAPE IT</b><h3>The piece.</h3><p>The conversation narrows the direction around the work Amanda actually does: black and grey, sleeves, cover-ups and larger compositions.</p></article>' +
-      '<article class="process-step reveal-premium"><b>03 / SIT FOR IT</b><h3>The session.</h3><p>Once the direction is right, the work moves from an idea on a screen to ink that has to live on the body.</p></article>' +
+      '<article class="process-step reveal-premium"><b>01 / TELL HER</b><h3>The idea.</h3><p>Send the subject, reference, memory or half-formed thought. Good tattoos do not need to begin as polished briefs.</p></article>' +
+      '<article class="process-step reveal-premium"><b>02 / WORK IT OUT</b><h3>The tattoo.</h3><p>From there, the idea gets shaped around placement, scale and the kind of work Amanda does best.</p></article>' +
+      '<article class="process-step reveal-premium"><b>03 / SIT FOR IT</b><h3>Your piece.</h3><p>Then comes the part that matters: turning the idea into something you get to leave wearing.</p></article>' +
     '</div>';
 
   if (shouts.length) shouts[0].insertAdjacentElement("afterend", process);
@@ -163,8 +171,8 @@
   if (skin) {
     var skinTitle = skin.querySelector("h2");
     var skinKicker = skin.querySelector(".kicker");
-    if (skinTitle) skinTitle.textContent = "Try the hand.";
-    if (skinKicker) skinKicker.textContent = "A small interactive study in pressure, line and patience. Press Ink, draw on the hide, then watch the line fade.";
+    if (skinTitle) skinTitle.textContent = "Try your hand.";
+    if (skinKicker) skinKicker.textContent = "A tiny taste of how unforgiving a clean line can be. Press Ink, draw on the practice skin, and see how your hand behaves.";
   }
 
   var book = document.getElementById("book");
@@ -173,10 +181,10 @@
     var bookKicker = book.querySelector(".kicker");
     var bookCite = book.querySelector(".cite");
     var submit = book.querySelector("button[type='submit']");
-    if (bookTitle) bookTitle.textContent = "Bring the idea.";
-    if (bookKicker) bookKicker.textContent = "Your name, your email, and what you want to build. That starts the conversation.";
-    if (bookCite) bookCite.textContent = "Booking / Amanda";
-    if (submit) submit.textContent = "Send booking request";
+    if (bookTitle) bookTitle.textContent = "Tell Amanda what you're thinking.";
+    if (bookKicker) bookKicker.textContent = "It does not have to be perfectly figured out. Send your idea and a way to reach you.";
+    if (bookCite) bookCite.textContent = "Booking / Amanda Hope Patterson";
+    if (submit) submit.textContent = "Send it to Amanda";
   }
 
   var reveal = Array.prototype.slice.call(document.querySelectorAll(".reveal-premium"));
