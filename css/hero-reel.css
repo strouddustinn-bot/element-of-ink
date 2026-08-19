@@ -3,8 +3,10 @@
   overflow: hidden;
 }
 
-.premium-eoi .hero-videos .eoi-hero-video,
-.premium-eoi .hero-videos .eoi-hero-poster {
+/* Element-qualified selectors intentionally outrank the legacy premium rule
+   that hid every non-lead video/image with !important. */
+.premium-eoi .hero-videos video.eoi-hero-video,
+.premium-eoi .hero-videos img.eoi-hero-poster {
   display: block !important;
   position: absolute;
   inset: 0;
@@ -18,29 +20,29 @@
   will-change: opacity, transform;
 }
 
-.premium-eoi .hero-videos .eoi-hero-video.is-active,
-.premium-eoi .hero-videos .eoi-hero-poster.is-active {
+.premium-eoi .hero-videos video.eoi-hero-video.is-active,
+.premium-eoi .hero-videos img.eoi-hero-poster.is-active {
   opacity: 1;
   visibility: visible;
   transition: opacity 1.05s ease, visibility 0s linear 0s, transform 10s ease;
   transform: scale(1);
 }
 
-.premium-eoi .hero-videos .eoi-hero-video.is-next {
+.premium-eoi .hero-videos video.eoi-hero-video.is-next {
   visibility: visible;
   opacity: 0;
 }
 
-.premium-eoi .hero-videos.eoi-hero-static .eoi-hero-video {
+.premium-eoi .hero-videos.eoi-hero-static video.eoi-hero-video {
   display: none !important;
 }
 
-.premium-eoi .hero-videos.eoi-hero-static .eoi-hero-poster:not(.is-active) {
+.premium-eoi .hero-videos.eoi-hero-static img.eoi-hero-poster:not(.is-active) {
   display: none !important;
 }
 
-.premium-eoi .hero-videos.eoi-hero-single .eoi-hero-poster,
-.premium-eoi .hero-videos.eoi-hero-reel .eoi-hero-poster {
+.premium-eoi .hero-videos.eoi-hero-single img.eoi-hero-poster,
+.premium-eoi .hero-videos.eoi-hero-reel img.eoi-hero-poster {
   pointer-events: none;
 }
 
@@ -53,33 +55,33 @@
 }
 
 @media (min-width: 1100px) {
-  .premium-eoi .hero-videos .eoi-hero-video,
-  .premium-eoi .hero-videos .eoi-hero-poster {
+  .premium-eoi .hero-videos video.eoi-hero-video,
+  .premium-eoi .hero-videos img.eoi-hero-poster {
     object-position: 50% 48%;
   }
 }
 
 @media (min-width: 700px) and (max-width: 1099px) {
-  .premium-eoi .hero-videos .eoi-hero-video,
-  .premium-eoi .hero-videos .eoi-hero-poster {
+  .premium-eoi .hero-videos video.eoi-hero-video,
+  .premium-eoi .hero-videos img.eoi-hero-poster {
     object-position: 56% 50%;
   }
 }
 
 @media (max-width: 699px) {
-  .premium-eoi .hero-videos .eoi-hero-poster {
+  .premium-eoi .hero-videos img.eoi-hero-poster {
     object-position: 58% 46%;
   }
-  .premium-eoi .hero-videos .eoi-hero-video {
+  .premium-eoi .hero-videos video.eoi-hero-video {
     display: none !important;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .premium-eoi .hero-videos .eoi-hero-video {
+  .premium-eoi .hero-videos video.eoi-hero-video {
     display: none !important;
   }
-  .premium-eoi .hero-videos .eoi-hero-poster {
+  .premium-eoi .hero-videos img.eoi-hero-poster {
     transition: none;
     transform: none;
   }
