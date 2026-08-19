@@ -1,0 +1,115 @@
+/* Real-photo temporary catalogue treatment. */
+.catalogue-photo-notice {
+  margin: 0 0 18px;
+  padding: 14px 16px;
+  border: 1px solid rgba(212,173,100,.24);
+  background: rgba(8,5,6,.42);
+  color: rgba(241,229,211,.58);
+  font: 600 9px/1.55 Arial, sans-serif;
+  letter-spacing: .08em;
+}
+
+.flash-page.photo-catalogue-page {
+  min-height: 0;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  background: #0d080a;
+  border-color: rgba(212,173,100,.24);
+}
+
+.flash-page.photo-catalogue-page::before {
+  background: linear-gradient(180deg, transparent, rgba(212,173,100,.18) 12%, rgba(212,173,100,.18) 88%, transparent);
+}
+
+.photo-flash-item {
+  position: relative;
+  min-height: clamp(360px, 36vw, 520px);
+  padding: 0;
+  overflow: hidden;
+  align-items: stretch;
+  justify-content: flex-end;
+  background: #120a0d;
+  color: var(--eoi-bone);
+}
+
+.photo-flash-item img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  filter: saturate(.72) contrast(1.04) brightness(.82);
+  transform: scale(1.002);
+  transition: transform .7s cubic-bezier(.2,.7,.2,1), filter .4s ease;
+}
+
+.photo-flash-item:hover img {
+  transform: scale(1.035);
+  filter: saturate(.82) contrast(1.06) brightness(.88);
+}
+
+.photo-flash-shade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(0deg, rgba(8,5,6,.94) 0%, rgba(8,5,6,.54) 31%, transparent 62%),
+    linear-gradient(90deg, rgba(8,5,6,.16), transparent 46%);
+  pointer-events: none;
+}
+
+.photo-flash-item .flash-number {
+  z-index: 3;
+  color: var(--eoi-gold);
+  text-shadow: 0 2px 8px rgba(0,0,0,.6);
+}
+
+.photo-flash-copy {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  padding: clamp(22px, 3vw, 34px);
+  text-align: left;
+}
+
+.photo-flash-copy h3 {
+  margin: 0 0 8px;
+  color: var(--eoi-bone);
+  font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif !important;
+  font-size: clamp(32px, 3.5vw, 54px);
+  font-weight: 800;
+  line-height: .92;
+}
+
+.photo-flash-copy > span {
+  display: block;
+  color: var(--eoi-gold);
+  font: 700 8px/1.25 Arial, sans-serif;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+}
+
+.photo-flash-copy small {
+  display: block;
+  margin-top: 9px;
+  color: rgba(241,229,211,.42);
+  font: 500 8px/1.3 Arial, sans-serif;
+  letter-spacing: .08em;
+}
+
+@media (max-width: 760px) {
+  .photo-flash-item {
+    min-height: 300px;
+  }
+  .photo-flash-copy {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .flash-page.photo-catalogue-page {
+    grid-template-columns: 1fr;
+  }
+  .photo-flash-item {
+    min-height: 360px;
+  }
+}
