@@ -1,7 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@400;500;600;700;800;900&display=swap');
 
-/* Element of Ink — blackletter display layer.
-   Keep the gothic face for identity and major headings only; body copy remains readable. */
+/* Element of Ink — Big Shoulders display system.
+   Use it for identity and major headings; keep long-form copy in the quieter body face. */
 .premium-eoi .brand,
 .premium-eoi h1,
 .premium-eoi .editorial-title,
@@ -9,28 +9,37 @@
 .premium-eoi #skin h2,
 .premium-eoi #book h2,
 .premium-eoi .process-step h3,
-.premium-eoi .shout .ink {
-  font-family: 'UnifrakturCook', 'Old English Text MT', 'Lucida Blackletter', Georgia, serif !important;
+.premium-eoi .shout .ink,
+.premium-eoi .shop-info-section h2,
+.premium-eoi .shop-info-section h3 {
+  font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif !important;
   font-weight: 700;
-  letter-spacing: -0.01em;
+  letter-spacing: .005em;
+}
+
+.premium-eoi .brand {
+  font-weight: 800;
+  letter-spacing: .025em;
 }
 
 .premium-eoi h1 {
+  font-weight: 800;
   line-height: .82;
-  letter-spacing: -.018em;
+  letter-spacing: -.012em;
 }
 
 .premium-eoi .editorial-title,
 .premium-eoi #work h2,
 .premium-eoi #skin h2,
-.premium-eoi #book h2 {
-  line-height: .9;
+.premium-eoi #book h2,
+.premium-eoi .shop-info-section h2 {
+  line-height: .88;
 }
 
 .premium-eoi .artist-copy .editorial-title {
   max-width: 11ch;
-  font-size: clamp(48px, 6.5vw, 104px);
-  line-height: .88;
+  font-size: clamp(52px, 6.8vw, 108px);
+  line-height: .86;
 }
 
 /* Navigation, labels and body copy deliberately stay clean. */
@@ -114,9 +123,10 @@
 .artist-photo-placeholder strong {
   max-width: 8ch;
   margin-top: 16px;
-  font-family: 'UnifrakturCook', 'Old English Text MT', Georgia, serif;
-  font-size: clamp(46px, 6vw, 88px);
-  line-height: .88;
+  font-family: 'Big Shoulders Display', 'Arial Narrow', Arial, sans-serif;
+  font-weight: 800;
+  font-size: clamp(52px, 6vw, 92px);
+  line-height: .86;
 }
 .artist-photo-placeholder p {
   max-width: 29ch;
@@ -134,10 +144,10 @@
 
   .premium-eoi .artist-copy .editorial-title {
     max-width: 10ch;
-    font-size: clamp(46px, 14vw, 72px);
+    font-size: clamp(50px, 14vw, 76px);
   }
 
   .artist-photo-placeholder strong {
-    font-size: clamp(42px, 14vw, 68px);
+    font-size: clamp(46px, 14vw, 72px);
   }
 }
