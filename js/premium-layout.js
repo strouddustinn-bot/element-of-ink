@@ -17,7 +17,7 @@
   body.classList.add("premium-eoi");
 
   var openBar = document.querySelector(".open-bar");
-  if (openBar) openBar.textContent = "Custom tattooing by Amanda Hope Patterson · Books open · Element of Ink";
+  if (openBar) openBar.textContent = "Hyper-realism by Amanda Hope Patterson · Books open · Element of Ink";
 
   var nav = document.querySelector("nav");
   var links = document.querySelector(".nav-links");
@@ -40,9 +40,13 @@
   if (heroCopy) {
     var h1 = heroCopy.querySelector("h1");
     var lede = heroCopy.querySelector(".lede");
+    var verse = heroCopy.querySelector(".verse");
+    var cite = heroCopy.querySelector(".cite");
     if (h1) h1.textContent = "Element of Ink";
+    if (verse) verse.textContent = "Hyper-realism by Amanda Hope Patterson.";
+    if (cite) cite.textContent = "Element of Ink";
     if (lede) {
-      lede.textContent = "Amanda Hope Patterson makes tattoos people are excited to live in and show off. Black-and-grey realism, sleeves, cover-ups and big custom pieces — drawn around the person who has to wear them.";
+      lede.textContent = "Amanda specializes in hyper-realism, with custom sleeves, cover-ups and large pieces built around the person wearing them. Her clients get to leave with artwork they are genuinely excited to show people.";
     }
   }
 
@@ -50,7 +54,7 @@
     var rail = document.createElement("div");
     rail.className = "hero-rail";
     rail.setAttribute("aria-hidden", "true");
-    rail.innerHTML = "<strong>Made to be worn. Made to be loved.</strong><span>Black & grey · Sleeves · Cover-ups · Big work</span>";
+    rail.innerHTML = "<strong>Hyper-realism by Amanda Hope Patterson.</strong><span>Custom work · Sleeves · Cover-ups · Large pieces</span>";
     hero.appendChild(rail);
 
     var scroll = document.createElement("div");
@@ -63,7 +67,7 @@
     signature.className = "signature-strip";
     signature.setAttribute("aria-label", "Specialties");
     signature.innerHTML =
-      '<div class="signature-item"><em>01</em> Black & grey realism</div>' +
+      '<div class="signature-item"><em>01</em> Hyper-realism</div>' +
       '<div class="signature-item"><em>02</em> Sleeves</div>' +
       '<div class="signature-item"><em>03</em> Cover-ups</div>' +
       '<div class="signature-item"><em>04</em> Large custom pieces</div>';
@@ -85,7 +89,7 @@
     var workTitle = work.querySelector("h2");
     var workKicker = work.querySelector(".kicker");
     if (workTitle) workTitle.textContent = "The work";
-    if (workKicker) workKicker.textContent = "The kind of tattoos people leave the chair checking in every mirror they pass. Move the machine across the ink and take a closer look.";
+    if (workKicker) workKicker.textContent = "Finished tattoos by Amanda Hope Patterson — hyper-realism, portrait work, sleeves, cover-ups and larger custom pieces. Move the machine across the ink to explore the gallery.";
     if (center) center.classList.add("reveal-premium");
   }
 
@@ -99,18 +103,18 @@
         '<div class="artist-portrait artist-working-target" id="artist-portrait">' +
           '<div class="artist-photo-placeholder" role="img" aria-label="Placeholder for a real working photo of Amanda Hope Patterson tattooing a client">' +
             '<span>REAL WORKING PHOTO</span>' +
-            '<strong>Amanda at the machine.</strong>' +
-            '<p>Replace with a verified @SUMDIRTYGINGE photo of Amanda actually tattooing.</p>' +
+            '<strong>Amanda tattooing.</strong>' +
+            '<p>Replace with a verified @SUMDIRTYGINGE photo of Amanda working with a client.</p>' +
           '</div>' +
         '</div>' +
         '<div class="artist-copy reveal-premium">' +
           '<div class="section-index">02 / THE ARTIST</div>' +
           '<h2 class="editorial-title" id="artist-title">Amanda Hope Patterson.</h2>' +
-          '<p class="editorial-copy">People bring Amanda all kinds of starting points — a rough idea, a memory, an old tattoo they are ready to cover, or a whole sleeve they have been thinking about for years. Her job is to turn that into something that feels right on the body and still feels like theirs when it is finished.</p>' +
-          '<p class="editorial-copy artist-heart">Her work leans into black-and-grey realism, strong contrast, depth and big compositions, but the best part is simpler than that: people are genuinely excited when they see the finished tattoo. That first look matters. The piece has to be something they are proud to walk out wearing.</p>' +
+          '<p class="editorial-copy">Amanda specializes in hyper-realism. People come to her with everything from a portrait or memory to a cover-up, a full sleeve or an idea they have been holding onto for years. She works through the details with them and turns that idea into a piece that fits the body and still feels personal.</p>' +
+          '<p class="editorial-copy artist-heart">The reaction at the end of a session says a lot about the work. Her clients are excited. They want to look at it, photograph it and show it off. They get to carry something Amanda made specifically for them, and that pride in the finished piece is a big part of what makes her work special.</p>' +
           '<div class="artist-notes">' +
-            '<div class="artist-note"><strong>Her lane</strong>Black & grey realism</div>' +
-            '<div class="artist-note"><strong>Come to her for</strong>Sleeves · Cover-ups · Large custom work</div>' +
+            '<div class="artist-note"><strong>Specialty</strong>Hyper-realism</div>' +
+            '<div class="artist-note"><strong>Also known for</strong>Sleeves · Cover-ups · Large custom work</div>' +
           '</div>' +
         '</div>' +
       '</div>';
@@ -120,7 +124,7 @@
 
   if (mosaic) {
     var labels = [
-      "Black & grey chest", "Kraken / ship", "Crucifixion", "Poseidon", "Wolf", "Reaper", "Jaguar",
+      "Hyper-realism chest piece", "Kraken / ship", "Crucifixion", "Poseidon", "Wolf", "Reaper", "Jaguar",
       "Father Time", "Rhino", "Story sleeve", "Back piece", "Portrait", "Norse / raven"
     ];
     var panels = mosaic.querySelectorAll(".panel");
@@ -137,6 +141,12 @@
   }
 
   var shouts = document.querySelectorAll("main > .shout");
+  if (shouts.length) {
+    var shoutInk = shouts[0].querySelector(".ink");
+    var shoutCite = shouts[0].querySelector(".cite");
+    if (shoutInk) shoutInk.textContent = "Hyper-realism. Made personal.";
+    if (shoutCite) shoutCite.textContent = "Amanda Hope Patterson";
+  }
   if (shouts.length > 1) shouts[1].hidden = true;
 
   var process = document.createElement("section");
@@ -146,13 +156,13 @@
   process.innerHTML =
     '<div class="process-head reveal-premium">' +
       '<div class="section-index">04 / THE PROCESS</div>' +
-      '<h2 class="editorial-title" id="process-title">Start with what you want.</h2>' +
-      '<p class="editorial-copy">You do not need to show up with perfect wording or a finished drawing. Tell Amanda what you have in your head, what matters about it, and where you want it to live. That is enough to start.</p>' +
+      '<h2 class="editorial-title" id="process-title">Start with your idea.</h2>' +
+      '<p class="editorial-copy">You do not need a finished drawing before you reach out. Send Amanda the idea, references if you have them, the placement you are considering and anything important about the piece.</p>' +
     '</div>' +
     '<div class="process-grid">' +
-      '<article class="process-step reveal-premium"><b>01 / TELL HER</b><h3>The idea.</h3><p>Send the subject, reference, memory or half-formed thought. Good tattoos do not need to begin as polished briefs.</p></article>' +
-      '<article class="process-step reveal-premium"><b>02 / WORK IT OUT</b><h3>The tattoo.</h3><p>From there, the idea gets shaped around placement, scale and the kind of work Amanda does best.</p></article>' +
-      '<article class="process-step reveal-premium"><b>03 / SIT FOR IT</b><h3>Your piece.</h3><p>Then comes the part that matters: turning the idea into something you get to leave wearing.</p></article>' +
+      '<article class="process-step reveal-premium"><b>01 / SEND YOUR IDEA</b><h3>Tell Amanda.</h3><p>Share the subject, reference, memory or concept you want to explore.</p></article>' +
+      '<article class="process-step reveal-premium"><b>02 / PLAN THE PIECE</b><h3>Work out the details.</h3><p>Amanda can shape the idea around placement, scale, composition and the level of realism you want.</p></article>' +
+      '<article class="process-step reveal-premium"><b>03 / BOOK THE SESSION</b><h3>Get tattooed.</h3><p>Once the direction is right, book the time and let Amanda turn the plan into the finished piece.</p></article>' +
     '</div>';
 
   if (shouts.length) shouts[0].insertAdjacentElement("afterend", process);
@@ -162,8 +172,8 @@
   if (skin) {
     var skinTitle = skin.querySelector("h2");
     var skinKicker = skin.querySelector(".kicker");
-    if (skinTitle) skinTitle.textContent = "Try your hand.";
-    if (skinKicker) skinKicker.textContent = "A tiny taste of how unforgiving a clean line can be. Press Ink, draw on the practice skin, and see how your hand behaves.";
+    if (skinTitle) skinTitle.textContent = "Try the practice skin.";
+    if (skinKicker) skinKicker.textContent = "Use the interactive practice skin to try a line yourself. Press Ink, draw, and see how steady your hand is.";
   }
 
   var book = document.getElementById("book");
@@ -172,10 +182,10 @@
     var bookKicker = book.querySelector(".kicker");
     var bookCite = book.querySelector(".cite");
     var submit = book.querySelector("button[type='submit']");
-    if (bookTitle) bookTitle.textContent = "Tell Amanda what you're thinking.";
-    if (bookKicker) bookKicker.textContent = "It does not have to be perfectly figured out. Send your idea and a way to reach you.";
+    if (bookTitle) bookTitle.textContent = "Have an idea for Amanda?";
+    if (bookKicker) bookKicker.textContent = "Send the idea and your contact information. It does not need to be completely figured out yet.";
     if (bookCite) bookCite.textContent = "Booking / Amanda Hope Patterson";
-    if (submit) submit.textContent = "Send it to Amanda";
+    if (submit) submit.textContent = "Send booking request";
   }
 
   var reveal = Array.prototype.slice.call(document.querySelectorAll(".reveal-premium"));
