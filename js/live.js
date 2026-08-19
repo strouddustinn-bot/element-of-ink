@@ -99,6 +99,12 @@
       console.error("Element of Ink shop info failed to load", err);
     })
     .then(function () {
+      return loadScript("js/shop-info-polish.js");
+    })
+    .catch(function (err) {
+      console.error("Element of Ink shop info reveal fix failed to load", err);
+    })
+    .then(function () {
       return loadScript("js/hero-reel.js");
     })
     .catch(function (err) {
