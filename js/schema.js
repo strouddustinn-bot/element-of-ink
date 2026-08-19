@@ -13,8 +13,6 @@
     return siteUrl + fragment;
   }
 
-  // Remove the original small Element of Ink JSON-LD block so crawlers see one
-  // coherent graph rather than two descriptions of the same business.
   document.querySelectorAll('script[type="application/ld+json"]').forEach(function (script) {
     if (script.id === "eoi-full-schema") return;
 
@@ -31,8 +29,8 @@
   });
 
   var portfolio = [
-    ["tattoo-16.jpg", "Black-and-grey chest piece"],
-    ["tattoo-01.jpg", "Kraken pulling a ship under in black and grey"],
+    ["tattoo-16.jpg", "Hyper-realism chest piece"],
+    ["tattoo-01.jpg", "Kraken pulling a ship under"],
     ["tattoo-05.jpg", "Winged crucifixion tattoo"],
     ["tattoo-09.jpg", "Poseidon with lightning and a ship"],
     ["tattoo-14.jpg", "Snarling wolf tattoo"],
@@ -42,7 +40,7 @@
     ["tattoo-12.jpg", "Rhino chest tattoo"],
     ["tattoo-08.jpg", "Story sleeve with a teddy bear, baseball, and childhood scenes"],
     ["tattoo-04.jpg", "Large back piece tattoo"],
-    ["tattoo-03.jpg", "Color portrait tattoo"],
+    ["tattoo-03.jpg", "Colour portrait tattoo"],
     ["tattoo-17.jpg", "Norse god and raven sleeve"]
   ];
 
@@ -62,9 +60,9 @@
       "@type": "Offer",
       "itemOffered": {
         "@type": "Service",
-        "@id": id("#service-black-grey"),
-        "name": "Black-and-grey realism tattooing",
-        "serviceType": "Black-and-grey realism tattooing",
+        "@id": id("#service-hyper-realism"),
+        "name": "Hyper-realism tattooing",
+        "serviceType": "Hyper-realism tattooing",
         "provider": { "@id": id("#studio") },
         "url": siteUrl + "#work"
       }
@@ -110,7 +108,7 @@
       "@id": id("#website"),
       "url": siteUrl,
       "name": "Element of Ink",
-      "description": "Element of Ink — black-and-grey realism, sleeves, cover-ups and large custom tattoo work by Amanda Hope Patterson.",
+      "description": "Element of Ink — hyper-realism, sleeves, cover-ups and large custom tattoo work by Amanda Hope Patterson.",
       "inLanguage": "en-CA",
       "publisher": { "@id": id("#studio") }
     },
@@ -119,7 +117,7 @@
       "@id": id("#home"),
       "url": siteUrl,
       "name": "Element of Ink — Amanda Hope Patterson",
-      "description": "Black-and-grey realism, sleeves, cover-ups and large custom tattoo work by Amanda Hope Patterson at Element of Ink.",
+      "description": "Hyper-realism, sleeves, cover-ups and large custom tattoo work by Amanda Hope Patterson at Element of Ink.",
       "isPartOf": { "@id": id("#website") },
       "about": [
         { "@id": id("#studio") },
@@ -135,8 +133,7 @@
       "name": "Element of Ink",
       "url": siteUrl,
       "email": "elementsofink@gmail.com",
-      "description": "Tattoo studio featuring Amanda Hope Patterson's black-and-grey realism, sleeves, cover-ups and large custom work.",
-      "slogan": "Sit still. Bleed pretty.",
+      "description": "Tattoo studio featuring Amanda Hope Patterson's hyper-realism, sleeves, cover-ups and large custom work.",
       "image": imageNodes.slice(0, 4).map(function (node) { return { "@id": node["@id"] }; }),
       "sameAs": [
         "https://www.instagram.com/SUMDIRTYGINGE/"
@@ -163,14 +160,14 @@
       "additionalName": "Hope",
       "familyName": "Patterson",
       "jobTitle": "Tattoo Artist",
-      "description": "Tattoo artist at Element of Ink focused on black-and-grey realism, sleeves, cover-ups and large custom work.",
+      "description": "Tattoo artist at Element of Ink specializing in hyper-realism, with custom sleeves, cover-ups and large-scale work.",
       "image": url("assets/tattoo-18.jpg"),
       "sameAs": [
         "https://www.instagram.com/SUMDIRTYGINGE/"
       ],
       "affiliation": { "@id": id("#studio") },
       "knowsAbout": [
-        "Black-and-grey realism tattooing",
+        "Hyper-realism tattooing",
         "Tattoo sleeves",
         "Cover-up tattoos",
         "Large-scale custom tattoo work"
@@ -188,7 +185,7 @@
       "@id": id("#portfolio"),
       "url": siteUrl + "#work",
       "name": "Element of Ink selected tattoo work by Amanda Hope Patterson",
-      "description": "Selected tattoo portfolio featuring black-and-grey realism, sleeves, animals, portraits, mythic subjects and large compositions.",
+      "description": "Selected tattoo portfolio featuring hyper-realism, sleeves, portraits, animals, cover-ups and large custom compositions.",
       "isPartOf": { "@id": id("#home") },
       "about": { "@id": id("#studio") },
       "associatedMedia": imageNodes.map(function (node) { return { "@id": node["@id"] }; })
