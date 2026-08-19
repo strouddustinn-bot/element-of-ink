@@ -89,14 +89,20 @@
     if (center) center.classList.add("reveal-premium");
   }
 
-  if (work && amandaImg && amandaPanel) {
+  if (work) {
     var artist = document.createElement("section");
     artist.id = "artist";
     artist.className = "artist-section";
     artist.setAttribute("aria-labelledby", "artist-title");
     artist.innerHTML =
       '<div class="artist-grid">' +
-        '<div class="artist-portrait" id="artist-portrait"></div>' +
+        '<div class="artist-portrait artist-working-target" id="artist-portrait">' +
+          '<div class="artist-photo-placeholder" role="img" aria-label="Placeholder for a real working photo of Amanda Hope Patterson tattooing a client">' +
+            '<span>REAL WORKING PHOTO</span>' +
+            '<strong>Amanda at the machine.</strong>' +
+            '<p>Replace with a verified @SUMDIRTYGINGE photo of Amanda actually tattooing.</p>' +
+          '</div>' +
+        '</div>' +
         '<div class="artist-copy reveal-premium">' +
           '<div class="section-index">02 / THE ARTIST</div>' +
           '<h2 class="editorial-title" id="artist-title">Amanda Hope Patterson.</h2>' +
@@ -109,28 +115,13 @@
         '</div>' +
       '</div>';
     work.parentNode.insertBefore(artist, work);
-
-    var portrait = artist.querySelector("#artist-portrait");
-    amandaImg.loading = "eager";
-    portrait.appendChild(amandaImg);
-    amandaPanel.remove();
+    if (amandaPanel) amandaPanel.remove();
   }
 
   if (mosaic) {
     var labels = [
-      "Black & grey chest",
-      "Kraken / ship",
-      "Crucifixion",
-      "Poseidon",
-      "Wolf",
-      "Reaper",
-      "Jaguar",
-      "Father Time",
-      "Rhino",
-      "Story sleeve",
-      "Back piece",
-      "Portrait",
-      "Norse / raven"
+      "Black & grey chest", "Kraken / ship", "Crucifixion", "Poseidon", "Wolf", "Reaper", "Jaguar",
+      "Father Time", "Rhino", "Story sleeve", "Back piece", "Portrait", "Norse / raven"
     ];
     var panels = mosaic.querySelectorAll(".panel");
     panels.forEach(function (panel, index) {
