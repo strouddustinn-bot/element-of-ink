@@ -2,15 +2,13 @@ name: Refine tattoo masks
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
     paths:
       - "scripts/build_roi_guidance.py"
       - "scripts/refine_tattoo_masks.py"
       - ".github/workflows/refine-tattoo-masks.yml"
   pull_request:
-    branches:
-      - main
+    branches: [main]
     paths:
       - "scripts/build_roi_guidance.py"
       - "scripts/refine_tattoo_masks.py"
@@ -36,6 +34,28 @@ jobs:
         run: python -m pip install --disable-pip-version-check numpy pillow opencv-python-headless
       - name: Rebuild ROI guidance
         run: python scripts/build_roi_guidance.py
+      - name: Tighten ROI-local pigment growth
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('scripts/refine_tattoo_masks.py')
+          s = p.read_text()
+          replacements = {
+              'dark_wash = 0.50 * darkness + 0.26 * contrast_mid + 0.16 * contrast_large + 0.08 * edge': 'dark_wash = 0.28 * darkness + 0.34 * contrast_mid + 0.24 * contrast_large + 0.14 * edge',
+              'linework = 0.18 * darkness + 0.38 * contrast_small + 0.30 * contrast_mid + 0.14 * edge': 'linework = 0.10 * darkness + 0.38 * contrast_small + 0.32 * contrast_mid + 0.20 * edge',
+              'color_ink = 0.20 * darkness + 0.23 * contrast_mid + 0.22 * edge + 0.20 * chroma + 0.15 * sat': 'color_ink = 0.12 * darkness + 0.24 * contrast_mid + 0.24 * edge + 0.22 * chroma + 0.18 * sat',
+              'candidate = ((raw >= 0.30) & roi & ~support).astype(np.uint8)': 'candidate = ((raw >= 0.34) & roi & ~support).astype(np.uint8)',
+              'float(vals.mean()) >= 0.34': 'float(vals.mean()) >= 0.38',
+              'strong = (raw >= 0.39) & roi\n    weak = (raw >= 0.16) & roi\n    strong |= (gray < 0.30) & roi & (raw >= 0.24)': 'strong = ((raw >= 0.46) | ((gray < 0.30) & (raw >= 0.22))) & roi\n    weak = ((raw >= 0.27) | ((gray < 0.40) & (raw >= 0.19))) & roi',
+              'if stats["active_pct_of_roi"] > 88.0:': 'if stats["active_pct_of_roi"] > 92.0:'
+          }
+          for old, new in replacements.items():
+              if old not in s:
+                  raise SystemExit(f'missing expected refinement expression: {old}')
+              s = s.replace(old, new)
+          p.write_text(s)
+          PY
       - name: Generate refined masks and wire gallery
         run: python scripts/refine_tattoo_masks.py
       - name: Validate generated files
