@@ -19,7 +19,7 @@
   css.id = "eoi-catalogue-photo-css";
   document.head.appendChild(css);
 
-  if (topLabel) topLabel.textContent = "Element of Ink · temporary tattoo reference catalogue";
+  if (topLabel) topLabel.textContent = "Elements of Ink · temporary tattoo reference catalogue";
   if (controlLabel) controlLabel.textContent = "Reference photos only · not Amanda's work";
 
   var notice = document.createElement("p");
