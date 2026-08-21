@@ -19,7 +19,7 @@
     try {
       var parsed = JSON.parse(script.textContent || "{}");
       var type = parsed && parsed["@type"];
-      var isEOI = parsed && parsed.name === "Element of Ink";
+      var isEOI = parsed && parsed.name === "Elements of Ink";
       var isTattooParlor = type === "TattooParlor" || (Array.isArray(type) && type.indexOf("TattooParlor") !== -1);
 
       if (isEOI && isTattooParlor) script.remove();
@@ -107,8 +107,8 @@
       "@type": "WebSite",
       "@id": id("#website"),
       "url": siteUrl,
-      "name": "Element of Ink",
-      "description": "Element of Ink — hyper-realism, sleeves, cover-ups and large custom tattoo work by Amanda Hope Patterson.",
+      "name": "Elements of Ink",
+      "description": "Elements of Ink — hyper-realism, sleeves, cover-ups and large custom tattoo work by Amanda Hope Patterson.",
       "inLanguage": "en-CA",
       "publisher": { "@id": id("#studio") }
     },
@@ -116,8 +116,8 @@
       "@type": "WebPage",
       "@id": id("#home"),
       "url": siteUrl,
-      "name": "Element of Ink — Amanda Hope Patterson",
-      "description": "Hyper-realism, sleeves, cover-ups and large custom tattoo work by Amanda Hope Patterson at Element of Ink.",
+      "name": "Elements of Ink — Amanda Hope Patterson",
+      "description": "Hyper-realism, sleeves, cover-ups and large custom tattoo work by Amanda Hope Patterson at Elements of Ink.",
       "isPartOf": { "@id": id("#website") },
       "about": [
         { "@id": id("#studio") },
@@ -130,23 +130,21 @@
     {
       "@type": ["TattooParlor", "LocalBusiness", "Organization"],
       "@id": id("#studio"),
-      "name": "Element of Ink",
+      "name": "Elements of Ink",
       "url": siteUrl,
-      "email": "elementsofink@gmail.com",
-      "description": "Tattoo studio featuring Amanda Hope Patterson's hyper-realism, sleeves, cover-ups and large custom work.",
+      "description": "Tattoo shop and podcast featuring Amanda Hope Patterson's hyper-realism, sleeves, cover-ups and large custom work.",
       "image": imageNodes.slice(0, 4).map(function (node) { return { "@id": node["@id"] }; }),
       "sameAs": [
-        "https://www.instagram.com/SUMDIRTYGINGE/"
+        "https://www.instagram.com/thedirtyginge/"
       ],
       "brand": {
         "@type": "Brand",
-        "name": "Element of Ink"
+        "name": "Elements of Ink"
       },
       "contactPoint": {
         "@type": "ContactPoint",
         "contactType": "booking inquiries",
-        "email": "elementsofink@gmail.com",
-        "url": siteUrl + "#book"
+          "url": siteUrl + "#book"
       },
       "hasOfferCatalog": { "@id": id("#services") },
       "subjectOf": { "@id": id("#portfolio") },
@@ -160,10 +158,10 @@
       "additionalName": "Hope",
       "familyName": "Patterson",
       "jobTitle": "Tattoo Artist",
-      "description": "Tattoo artist at Element of Ink specializing in hyper-realism, with custom sleeves, cover-ups and large-scale work.",
+      "description": "Tattoo artist and podcast creator at Elements of Ink specializing in hyper-realism, with custom sleeves, cover-ups and large-scale work.",
       "image": url("assets/tattoo-18.jpg"),
       "sameAs": [
-        "https://www.instagram.com/SUMDIRTYGINGE/"
+        "https://www.instagram.com/thedirtyginge/"
       ],
       "affiliation": { "@id": id("#studio") },
       "knowsAbout": [
@@ -184,7 +182,7 @@
       "@type": "ImageGallery",
       "@id": id("#portfolio"),
       "url": siteUrl + "#work",
-      "name": "Element of Ink selected tattoo work by Amanda Hope Patterson",
+      "name": "Elements of Ink selected tattoo work by Amanda Hope Patterson",
       "description": "Selected tattoo portfolio featuring hyper-realism, sleeves, portraits, animals, cover-ups and large custom compositions.",
       "isPartOf": { "@id": id("#home") },
       "about": { "@id": id("#studio") },
