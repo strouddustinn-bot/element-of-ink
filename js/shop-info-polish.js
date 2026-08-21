@@ -55,8 +55,8 @@
   }
 
   /* Replace temporary vector drawings with real tattoo reference photography. */
-  loadOptional("js/catalogue-photo-upgrade.js", "Element of Ink real-photo catalogue upgrade failed to load");
+  loadOptional("js/catalogue-photo-upgrade.js", "Elements of Ink real-photo catalogue upgrade failed to load");
 
   /* Put verified contact details up top and repeat them in the footer; unknown facts stay explicit placeholders. */
-  loadOptional("js/contact-banner.js", "Element of Ink contact banner failed to load");
+  loadOptional("js/contact-banner.js", "Elements of Ink contact banner failed to load");
 })();
