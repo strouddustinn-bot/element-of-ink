@@ -1,1 +1,1 @@
-Element of Ink preview.
+Elements of Ink preview.

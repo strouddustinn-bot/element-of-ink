@@ -17,7 +17,7 @@
   body.classList.add("premium-eoi");
 
   var openBar = document.querySelector(".open-bar");
-  if (openBar) openBar.textContent = "Hyper-realism by Amanda Hope Patterson · Books open · Element of Ink";
+  if (openBar) openBar.textContent = "Tattoo shop + podcast · Hyper-realism by Amanda Hope Patterson · Books open · Elements of Ink";
 
   var nav = document.querySelector("nav");
   var links = document.querySelector(".nav-links");
@@ -26,7 +26,7 @@
       '<a href="#work">Work</a>' +
       '<a href="#artist">Amanda</a>' +
       '<a href="#process">Process</a>' +
-      '<a href="https://www.instagram.com/SUMDIRTYGINGE/" rel="noreferrer">Instagram</a>';
+      '<a href="https://www.instagram.com/thedirtyginge/" rel="noreferrer">Instagram</a>';
   }
 
   if (nav) {
@@ -42,9 +42,9 @@
     var lede = heroCopy.querySelector(".lede");
     var verse = heroCopy.querySelector(".verse");
     var cite = heroCopy.querySelector(".cite");
-    if (h1) h1.textContent = "Element of Ink";
+    if (h1) h1.textContent = "Elements of Ink";
     if (verse) verse.textContent = "Hyper-realism by Amanda Hope Patterson.";
-    if (cite) cite.textContent = "Element of Ink";
+    if (cite) cite.textContent = "Elements of Ink";
     if (lede) {
       lede.textContent = "Amanda specializes in hyper-realism, with custom sleeves, cover-ups and large pieces built around the person wearing them. Her clients get to leave with artwork they are genuinely excited to show people.";
     }
@@ -104,7 +104,7 @@
           '<div class="artist-photo-placeholder" role="img" aria-label="Placeholder for a real working photo of Amanda Hope Patterson tattooing a client">' +
             '<span>REAL WORKING PHOTO</span>' +
             '<strong>Amanda tattooing.</strong>' +
-            '<p>Replace with a verified @SUMDIRTYGINGE photo of Amanda working with a client.</p>' +
+            '<p>Replace with a verified @thedirtyginge photo of Amanda working with a client.</p>' +
           '</div>' +
         '</div>' +
         '<div class="artist-copy reveal-premium">' +

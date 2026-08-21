@@ -1,13 +1,13 @@
 (function () {
   "use strict";
 
-  document.title = "Element of Ink — Amanda Hope Patterson | Hyper-Realism Tattoo Artist";
+  document.title = "Elements of Ink — Amanda Hope Patterson | Hyper-Realism Tattoo Artist";
 
   var description = document.querySelector('meta[name="description"]');
   if (description) {
     description.setAttribute(
       "content",
-      "Element of Ink — hyper-realism tattooing by Amanda Hope Patterson, including custom sleeves, cover-ups, portraits and large-scale work."
+      "Elements of Ink — Amanda Hope Patterson's tattoo shop and podcast, featuring hyper-realism tattooing, custom sleeves, cover-ups, portraits and large-scale work."
     );
   }
 })();

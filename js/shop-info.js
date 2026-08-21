@@ -68,11 +68,11 @@
       '<div class="shop-head reveal-premium">' +
         '<div class="section-index">05 / VISIT + PRICING</div>' +
         '<h2 class="editorial-title" id="shop-info-title">Know before you come in.</h2>' +
-        '<p class="editorial-copy">This section is staged with placeholders until Amanda confirms the shop details and rates. Nothing marked TBD is being presented as final pricing or business information.</p>' +
+        '<p class="editorial-copy">This section is staged with placeholders until Amanda confirms the shop details and rates. Elements of Ink is a tattoo shop and podcast. Nothing marked TBD is being presented as final pricing or business information.</p>' +
       '</div>' +
       '<div class="shop-visit-grid">' +
-        '<div class="street-placeholder reveal-premium" role="img" aria-label="Placeholder for a street-view photo of the Element of Ink storefront">' +
-          '<div class="street-sky"></div><div class="street-building"><b>ELEMENT OF INK</b><span>SHOP @ STREET VIEW</span></div><div class="street-road"></div>' +
+        '<div class="street-placeholder reveal-premium" role="img" aria-label="Placeholder for a street-view photo of the Elements of Ink storefront">' +
+          '<div class="street-sky"></div><div class="street-building"><b>ELEMENTS OF INK</b><span>SHOP @ STREET VIEW</span></div><div class="street-road"></div>' +
           '<div class="placeholder-stamp">Replace with real storefront / street-view photo</div>' +
         '</div>' +
         '<div class="shop-facts reveal-premium">' +
@@ -85,7 +85,7 @@
         '<div><span class="fact-label">Custom work · placeholder</span><strong>' + config.customHourly + '</strong><p>Hourly custom rate placeholder only. Final pricing can reflect Amanda’s actual minimums, day rates, deposits or piece pricing.</p></div>' +
       '</div>' +
       '<div class="flash-book-wrap reveal-premium">' +
-        '<div class="flash-book-top"><span>Element of Ink · Sample flash book</span><span id="flash-page-count">Page 01 / 04</span></div>' +
+        '<div class="flash-book-top"><span>Elements of Ink · Sample flash book</span><span id="flash-page-count">Page 01 / 04</span></div>' +
         '<div class="flash-book" id="flash-book" tabindex="0" aria-live="polite"><div class="flash-page" id="flash-page"></div></div>' +
         '<div class="flash-controls">' +
           '<button type="button" id="flash-prev" aria-label="Previous flash page">← Back</button>' +
@@ -94,7 +94,7 @@
         '</div>' +
       '</div>' +
       '<div class="artist-working-slot reveal-premium">' +
-        '<div class="working-photo-placeholder"><span>WORKING PORTRAIT</span><strong>Amanda tattooing someone.</strong><p>Use a real @SUMDIRTYGINGE working photo here — no stock artist, no stand-in.</p></div>' +
+        '<div class="working-photo-placeholder"><span>WORKING PORTRAIT</span><strong>Amanda tattooing someone.</strong><p>Use a real @thedirtyginge working photo here — no stock artist, no stand-in.</p></div>' +
         '<div><span class="fact-label">Artist image upgrade</span><h3>Amanda at work.</h3><p>The current posed portrait can be replaced by a real photo from her Instagram showing her actually tattooing. The layout is ready for that image as soon as we have the exact post/photo file.</p></div>' +
       '</div>' +
     '</div>';

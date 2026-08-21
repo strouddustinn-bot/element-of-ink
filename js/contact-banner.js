@@ -19,12 +19,11 @@
   var banner = document.createElement("section");
   banner.id = "eoi-contact-banner";
   banner.className = "eoi-contact-banner";
-  banner.setAttribute("aria-label", "Element of Ink contact information");
+  banner.setAttribute("aria-label", "Elements of Ink contact information");
   banner.innerHTML =
     '<div class="eoi-contact-banner-inner">' +
       '<div class="eoi-contact-lead"><span>CONTACT AMANDA</span><strong>READY TO TALK TATTOOS?</strong></div>' +
-      '<a class="eoi-contact-item is-live" href="mailto:elementsofink@gmail.com"><small>EMAIL</small><b>elementsofink@gmail.com</b></a>' +
-      '<a class="eoi-contact-item is-live" href="https://www.instagram.com/SUMDIRTYGINGE/" rel="noreferrer"><small>INSTAGRAM</small><b>@SUMDIRTYGINGE</b></a>' +
+      '<a class="eoi-contact-item is-live" href="https://www.instagram.com/thedirtyginge/" rel="noreferrer"><small>INSTAGRAM</small><b>@thedirtyginge</b></a>' +
       '<div class="eoi-contact-item is-placeholder"><small>PHONE</small><b>NUMBER TBD</b></div>' +
       '<div class="eoi-contact-item is-placeholder"><small>SHOP</small><b>LOCATION TBD</b></div>' +
     '</div>';
@@ -36,11 +35,10 @@
   if (footer) {
     footer.classList.add("eoi-contact-footer");
     footer.innerHTML =
-      '<div class="eoi-footer-brand"><strong>Element of Ink</strong><span>Hyper-realism by Amanda Hope Patterson</span></div>' +
+      '<div class="eoi-footer-brand"><strong>Elements of Ink</strong><span>Tattoo shop + podcast · Amanda Hope Patterson</span></div>' +
       '<div class="eoi-footer-contact">' +
         '<span class="eoi-footer-label">CONTACT AMANDA</span>' +
-        '<a href="mailto:elementsofink@gmail.com">elementsofink@gmail.com</a>' +
-        '<a href="https://www.instagram.com/SUMDIRTYGINGE/" rel="noreferrer">@SUMDIRTYGINGE</a>' +
+        '<a href="https://www.instagram.com/thedirtyginge/" rel="noreferrer">@thedirtyginge</a>' +
       '</div>' +
       '<div class="eoi-footer-contact eoi-footer-placeholders">' +
         '<span class="eoi-footer-label">SHOP DETAILS</span>' +
